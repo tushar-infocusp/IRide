@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">IRide</string>
+    <string name="corporate_exclusive">Corporate Exclusive</string>
+    <string name="the_smarter_way_to">The Smarter Way \nto </string>
+    <string name="commute_together">Commute \nTogether</string>
+    <string name="join_your_colleagues_in_reducing_co2">Join your colleagues in reducing CO2 \nemissions. Track your impact, earn \ncarbon credits, and enjoy a premium \nride-sharing experience designed for the \nmodern workplace.</string>
+    <string name="carbon_ledger">Carbon Ledger</string>
+    <string name="corporate_credits">Corporate Credits</string>
+    <string name="real_time_tracking_ofevery_gram_of_co2">Real-time tracking of every gram of CO2 you \nsave during your daily commute.</string>
+    <string name="turn_your_sustainability_efforts_into_tangible_corporate_rewards_and_perks">Turn your sustainability efforts into tangible \ncorporate rewards and perks.</string>
+    <string name="secure_sso_integration_for_authorized_employees_only">Secure SSO integration for authorized employees only</string>
+    <string name="your_journey_towards_zero_emission_mobility_begins_here">Your journey towards zero-emission mobility begins here.</string>
+    <string name="sign_in_with_phone">Sign in with Phone</string>
+    <string name="sign_in_with_email">Sign in with Email</string>
+    <string name="secure_otp_verification">Secure OTP verification</string>
+    <string name="access_with_your_corporate_account">Access with your corporate account</string>
+    <string name="sustainability_commitment">Sustainability Commitment</string>
+    <string name="by_choosing_i_ride">By choosing IRide, you are contributing \nto a projected</string>
+    <string name="35_percent_reduction">35% reduction</string>
+    <string name="in_corporate_carbon_footprint">in corporate \ncarbon footprint this year.</string>
+</resources>
