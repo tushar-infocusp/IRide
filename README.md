@@ -1,3 +1,5 @@
+
+
 This is a Kotlin Multiplatform project targeting Android, iOS.
 
 * [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
@@ -11,6 +13,8 @@ This is a Kotlin Multiplatform project targeting Android, iOS.
 
 * [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+
+Collaborators : tushar.agrawal@infocusp.com, harsh.agrawal@infocusp.com
 
 ### Build and Run Android Application
 
