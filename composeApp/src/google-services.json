@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "687675182668",
+    "project_id": "iride-74597",
+    "storage_bucket": "iride-74597.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:687675182668:android:6be2cd08a5cf41816beee9",
+        "android_client_info": {
+          "package_name": "com.example.iride"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzTmMMpO1XAnIb-MiSaEDy73spGHdd5Es"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
