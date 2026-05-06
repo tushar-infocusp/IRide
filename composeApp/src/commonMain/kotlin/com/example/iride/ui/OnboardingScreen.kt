@@ -178,7 +178,7 @@ fun OnboardingScreen(
                     .fillMaxWidth()
                     .wrapContentHeight(),
                 horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ){
                 Icon(
                    painter = painterResource(Res.drawable.ic_lock),
