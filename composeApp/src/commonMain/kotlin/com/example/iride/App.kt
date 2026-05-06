@@ -6,13 +6,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import com.example.iride.navigation.OnBoarding
 
 @Composable
-@Preview
 fun App() {
     MaterialTheme {
         Column(
@@ -20,8 +18,7 @@ fun App() {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Navigator(OnBoarding()){
-                navigator ->
+            Navigator(OnBoarding()) { navigator ->
                 SlideTransition(navigator)
             }
         }
