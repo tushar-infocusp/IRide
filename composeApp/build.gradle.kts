@@ -5,7 +5,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-
+    id("com.google.gms.google-services")
+    alias(libs.plugins.kotlinCocoapods)
 }
 
 compose.resources {
@@ -29,11 +30,39 @@ kotlin {
             isStatic = true
         }
     }
-    
+
+    cocoapods {
+        summary = "Shared module"
+        homepage = "https://example.com"
+
+        ios.deploymentTarget = "14.1"
+
+        podfile = project.file("../iosApp/Podfile")
+
+        version = "1.0.0"
+
+        pod("FirebaseAuth") {
+            version = "10.29.0"
+            extraOpts += listOf("-compiler-option", "-fmodules")
+        }
+
+        pod("FirebaseCore") {
+            version = "10.29.0"
+        }
+
+        framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
+//            implementation(libs.koin.compose)
+            implementation(libs.firebase.auth.ktx)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -48,7 +77,12 @@ kotlin {
             implementation(libs.voyager.screenmodel)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.lifecycle)
+            implementation(libs.koin.core)
+            implementation(libs.insert.koin.koin.compose)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
