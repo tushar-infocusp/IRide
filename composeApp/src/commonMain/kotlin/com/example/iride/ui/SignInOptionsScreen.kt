@@ -40,18 +40,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.iride.data.Platform
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources._35_percent_reduction
 import com.example.iride.generated.resources.access_with_your_corporate_account
 import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.by_choosing_i_ride
 import com.example.iride.generated.resources.ic_car
-import com.example.iride.generated.resources.ic_i_ride
+import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_message
 import com.example.iride.generated.resources.ic_phone
 import com.example.iride.generated.resources.ic_right_arrow
 import com.example.iride.generated.resources.ic_tree
 import com.example.iride.generated.resources.in_corporate_carbon_footprint
+import com.example.iride.generated.resources.log_in_with_email_and_password
 import com.example.iride.generated.resources.secure_otp_verification
 import com.example.iride.generated.resources.sign_in_with_email
 import com.example.iride.generated.resources.sign_in_with_phone
@@ -68,7 +70,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SignInOptionsScreen() {
+fun SignInOptionsScreen(
+    openSignInScreen : () -> Unit
+) {
 
     val scrollState = rememberScrollState()
 
@@ -134,9 +138,11 @@ fun SignInOptionsScreen() {
 
             SignInCard(
                 icon = painterResource(Res.drawable.ic_phone),
-                title = stringResource(Res.string.sign_in_with_phone),
+                title = if(Platform == "Android") stringResource(Res.string.sign_in_with_phone) else stringResource(Res.string.log_in_with_email_and_password),
                 description = stringResource(Res.string.secure_otp_verification)
-            )
+            ){
+                openSignInScreen()
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -144,7 +150,9 @@ fun SignInOptionsScreen() {
                 icon = painterResource(Res.drawable.ic_message),
                 title = stringResource(Res.string.sign_in_with_email),
                 description = stringResource(Res.string.access_with_your_corporate_account)
-            )
+            ){
+
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -166,7 +174,7 @@ fun SignInOptionsTopBar(){
         verticalAlignment = Alignment.CenterVertically
     ){
         Icon(
-            painter = painterResource(Res.drawable.ic_i_ride),
+            painter = painterResource(Res.drawable.ic_leaf),
             contentDescription = "I Ride Icon",
             modifier = Modifier
                 .size(18.dp),
@@ -189,7 +197,8 @@ fun SignInOptionsTopBar(){
 fun SignInCard(
     icon : Painter,
     title : String,
-    description : String
+    description : String,
+    onClick : () -> Unit
 ){
     Card(
         modifier = Modifier
@@ -201,7 +210,10 @@ fun SignInCard(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             1.dp, Color(0xFFD1FAE5)
-        )
+        ),
+        onClick = {
+            onClick()
+        }
     ) {
         Row(
             modifier = Modifier
@@ -325,7 +337,8 @@ fun SustainabilityCard(){
                     text = stringResource(Res.string.sustainability_commitment).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.W600,
-                    color = Color(0xFF065F46)
+                    color = Color(0xFF065F46),
+                    textAlign = TextAlign.Center
                 )
             }
 
