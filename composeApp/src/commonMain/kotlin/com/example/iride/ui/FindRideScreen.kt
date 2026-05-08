@@ -67,6 +67,7 @@ import com.example.iride.theme.paleGreen
 import com.example.iride.theme.primaryBackground
 import com.example.iride.theme.primaryBlack
 import com.example.iride.theme.strokeLightGreen
+import com.example.iride.ui.common.TopHeader
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -478,59 +479,6 @@ fun FindRideScreen() {
     }
 }
 
-@Composable
-fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
-    Card(
-        shape = RectangleShape,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier.background(Color.White).fillMaxWidth().padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            Row(
-                modifier = Modifier.background(Color.White).weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_profile),
-                    contentDescription = null,
-                    tint = null,
-                    modifier = Modifier.clip(CircleShape).clickable(true, onClick = {
-                        onProfileClick()
-                    })
-
-                )
-
-                Text(
-                    modifier = Modifier.padding(all = 16.dp),
-                    text = stringResource(Res.string.app_name), color = emeraldGreen,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.W700,
-                )
-            }
-            Icon(
-                painter = painterResource(Res.drawable.ic_notification),
-                contentDescription = null,
-                tint = null,
-                modifier = Modifier.clickable(true, onClick = {
-                    onNotificationClick()
-                })
-            )
-
-        }
-    }
-}
-
-//@Preview
-//@Composable
-//fun TopHeaderPreview() {
-//    TopHeader({},{})
-//}
 
 
 @Preview(device = PIXEL_9)
