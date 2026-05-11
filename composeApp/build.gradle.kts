@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "1.9.20"
     alias(libs.plugins.kotlinCocoapods)
 }
 
@@ -63,6 +64,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
 //            implementation(libs.koin.compose)
             implementation(libs.firebase.auth.ktx)
+            implementation("io.ktor:ktor-client-okhttp:2.3.7")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -81,8 +83,14 @@ kotlin {
             implementation(libs.insert.koin.koin.compose)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
+            implementation("io.ktor:ktor-client-core:2.3.7")
+            implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
         }
 
+        iosMain.dependencies {
+            implementation("io.ktor:ktor-client-darwin:2.3.7")
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

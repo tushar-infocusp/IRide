@@ -13,7 +13,7 @@ class SignIn : Screen {
         val navigator = LocalNavigator.currentOrThrow
         SignInScreen(
             openHomeScreen = {
-
+                navigator.push(FindRide())
             }
         ) {
             navigator.pop()
