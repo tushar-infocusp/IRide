@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,17 +39,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
-import com.example.iride.generated.resources.carbon_ledger
 import com.example.iride.generated.resources.estimated_carbon_saving
-import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
+import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_location
 import com.example.iride.generated.resources.ic_notification
 import com.example.iride.generated.resources.ic_publish_ride_map
@@ -78,7 +73,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import org.koin.compose.koinInject
 
 @Composable
 fun FindRideScreen(
@@ -417,10 +411,10 @@ fun FindRideScreen(
                                     .clickable{
                                         scope.launch {
                                             rideViewModel.publishRide(
-                                                origin = "Meerut",
-                                                destination = "Delhi",
-                                                seats = 4,
-                                                price = 150.0,
+                                                origin = "Pune",
+                                                destination = "Mumbai",
+                                                seats = 2,
+                                                price = 250.0,
                                                 startDateTime = 1778250273000,
                                                 endDateTime = 1778261073000
                                             )
@@ -561,11 +555,11 @@ fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
     }
 }
 
-@Preview(device = PIXEL_9)
-@Composable
-fun FindRidePreview() {
-    val rideViewModel : RideViewModel = koinInject()
-    FindRideScreen(
-        rideViewModel = rideViewModel
-    )
-}
+//@Preview(device = PIXEL_9)
+//@Composable
+//fun FindRidePreview() {
+//    val rideViewModel : RideViewModel = koinInject()
+//    FindRideScreen(
+//        rideViewModel = rideViewModel
+//    )
+//}

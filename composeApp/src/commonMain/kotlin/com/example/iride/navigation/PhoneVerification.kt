@@ -18,7 +18,7 @@ class PhoneVerification : Screen {
 
         PhoneVerificationScreen(
             onVerificationSuccess = {
-                navigator.push(FindRide())
+                navigator.push(Main())
             },
             onBackClick = {
                 navigator.pop()
