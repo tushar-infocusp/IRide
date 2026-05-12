@@ -3,6 +3,7 @@ package com.example.iride
 import android.app.Application
 import com.example.iride.data.AppContextHolder
 import com.example.iride.di.androidModule
+import com.example.iride.di.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext.startKoin
@@ -14,7 +15,7 @@ class BaseApplication : Application() {
 
         AppContextHolder.context = applicationContext
 
-        startKoin {
+        initKoin {
             androidLogger()
             androidContext(this@BaseApplication)
             modules(androidModule)

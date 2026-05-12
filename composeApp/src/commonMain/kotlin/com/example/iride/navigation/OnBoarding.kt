@@ -12,7 +12,7 @@ class OnBoarding : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         OnboardingScreen{
-            navigator.replace(SignInOptions())
+            navigator.replace(FindRide())
         }
     }
 }
