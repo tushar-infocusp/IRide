@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
+import com.example.iride.generated.resources.carbon_footprint
+import com.example.iride.generated.resources.carbon_ledger
+import com.example.iride.generated.resources.estimated_carbon_saving
 import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
 import com.example.iride.generated.resources.ic_location
@@ -57,6 +61,8 @@ import com.example.iride.generated.resources.ic_time
 import com.example.iride.generated.resources.ic_user_profile
 import com.example.iride.generated.resources.offer_ride_sub_title
 import com.example.iride.generated.resources.offer_ride_title
+import com.example.iride.generated.resources.publish_ride
+import com.example.iride.generated.resources.route_details
 import com.example.iride.theme.darkBlue
 import com.example.iride.theme.deepGreen
 import com.example.iride.theme.emeraldGreen
@@ -67,16 +73,24 @@ import com.example.iride.theme.paleGreen
 import com.example.iride.theme.primaryBackground
 import com.example.iride.theme.primaryBlack
 import com.example.iride.theme.strokeLightGreen
+import com.example.iride.viewmodel.RideViewModel
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import org.koin.compose.koinInject
 
 @Composable
-fun FindRideScreen() {
+fun FindRideScreen(
+    rideViewModel: RideViewModel
+) {
+
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .background(primaryBackground)
+            .background(Color.White)
             .statusBarsPadding()
     ) {
         val scrollState = rememberScrollState()
@@ -112,53 +126,63 @@ fun FindRideScreen() {
                     ) {
                         Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
                             Text(
-                                "ROUTE DETAILS",
+                                text = stringResource(Res.string.route_details).uppercase(),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.W500,
                                 modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp)
                             )
 
                             Row(
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                                    .padding(top = 8.dp, bottom = 8.dp).clip(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(top = 8.dp, bottom = 8.dp)
+                                    .clip(
                                         RoundedCornerShape(8.dp)
                                     ).border(
                                         width = 1.dp,
                                         color = greyLight,
                                         shape = RoundedCornerShape(8.dp)
-                                    ).background(primaryBackground).fillMaxWidth()
-                                    .wrapContentHeight()
+                                    ).background(primaryBackground)
+                                    .fillMaxWidth()
+                                    .height(50.dp)
                                     .clickable(true, onClick = {
                                         // open the location search page with autocomplete or map
                                     }),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
                                         .padding(vertical = 8.dp)
-                                        .fillMaxHeight(),
+                                        .height(50.dp),
                                     verticalArrangement = Arrangement.Top,
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Icon(
                                         imageVector = vectorResource(Res.drawable.ic_location),
                                         contentDescription = null,
-                                        tint = emeraldGreen,
-                                        modifier = Modifier.size(10.dp)
+                                        tint = darkBlue,
+                                        modifier = Modifier
+                                            .width(10.dp)
+                                            .height(12.dp)
                                     )
                                     Spacer(
-                                        modifier = Modifier.padding(top = 4.dp).width(1.dp)
-                                            .background(greyLight).defaultMinSize(minHeight = 10.dp)
-                                            .fillMaxHeight()
+                                        modifier = Modifier
+                                            .padding(top = 4.dp)
+                                            .width(1.dp)
+                                            .background(greyLight)
+                                            .height(16.dp)
                                     )
 
                                 }
 
                                 Text(
-                                    "Downtown Tech District", color = darkBlue,
+                                    "Downtown Tech District",
+                                    color = darkBlue,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.W300,
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
                                 )
                             }
 
@@ -175,12 +199,12 @@ fun FindRideScreen() {
                                     ).background(primaryBackground).fillMaxWidth()
                                     .wrapContentHeight()
                                     .clickable(true, onClick = {
-                                        // open the location search page with autocomplete or map
                                     }),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
                                         .padding(vertical = 8.dp)
                                         .fillMaxHeight(),
                                     verticalArrangement = Arrangement.Top,
@@ -190,17 +214,19 @@ fun FindRideScreen() {
                                         imageVector = vectorResource(Res.drawable.ic_flag),
                                         contentDescription = null,
                                         tint = emeraldGreen,
-                                        modifier = Modifier.size(10.dp)
+                                        modifier = Modifier
+                                            .width(9.dp)
+                                            .height(10.dp)
                                     )
-
-
                                 }
 
                                 Text(
-                                    "Downtown Tech District", color = darkBlue,
+                                    text = "Downtown Tech District",
+                                    color = darkBlue,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.W300,
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
                                         .padding(vertical = 16.dp)
                                 )
                             }
@@ -243,12 +269,6 @@ fun FindRideScreen() {
                                                 tint = emeraldGreen,
                                                 modifier = Modifier.size(10.dp)
                                             )
-//                                        Spacer(
-//                                            modifier = Modifier.padding(top = 4.dp).width(1.dp)
-//                                                .background(greyLight)
-//                                                .defaultMinSize(minHeight = 10.dp)
-//                                                .fillMaxHeight()
-//                                        )
 
                                         }
 
@@ -282,7 +302,6 @@ fun FindRideScreen() {
                                             ).background(primaryBackground).fillMaxWidth()
                                             .wrapContentHeight()
                                             .clickable(true, onClick = {
-                                                // open the location search page with autocomplete or map
                                             }),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -299,13 +318,6 @@ fun FindRideScreen() {
                                                 tint = emeraldGreen,
                                                 modifier = Modifier.size(10.dp)
                                             )
-//                                        Spacer(
-//                                            modifier = Modifier.padding(top = 4.dp).width(1.dp)
-//                                                .background(greyLight)
-//                                                .defaultMinSize(minHeight = 10.dp)
-//                                                .fillMaxHeight()
-//                                        )
-
                                         }
 
                                         Text(
@@ -339,69 +351,92 @@ fun FindRideScreen() {
                                     .padding(top = 8.dp, bottom = 8.dp)
                                     .clip(
                                         RoundedCornerShape(8.dp)
-                                    ).border(
+                                    )
+                                    .border(
                                         width = 1.dp,
                                         color = strokeLightGreen,
                                         shape = RoundedCornerShape(8.dp)
-                                    ).background(lightGreen).fillMaxWidth().wrapContentHeight()
+                                    )
+                                    .background(lightGreen.copy(.2f))
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
                                     .clickable(true, onClick = {
                                         // open the location search page with autocomplete or map
                                     }),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(start = 16.dp)
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
                                         .padding(vertical = 16.dp)
-                                        .clip(CircleShape).background(emeraldGreen)
+                                        .clip(CircleShape)
+                                        .background(emeraldGreen)
                                 ) {
                                     Icon(
-                                        modifier = Modifier.padding(16.dp).size(16.dp),
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .size(16.dp),
                                         painter = painterResource(
                                             Res.drawable.ic_leaf
                                         ),
                                         contentDescription = null,
                                         tint = strokeLightGreen
                                     )
-
-
                                 }
                                 Column(
-                                    modifier = Modifier.padding(start = 16.dp)
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
                                         .padding(vertical = 8.dp)
                                 ) {
                                     Text(
-                                        "Estimated Carbon Saving",
-                                        color = primaryBlack,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W500
+                                        stringResource(resource = Res.string.estimated_carbon_saving),
+                                        color = Color((0xFF003527)),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.W600,
+                                        lineHeight = 16.sp
                                     )
 
                                     Text(
-                                        "8.4 kg CO2e for this trip",
-                                        color = primaryBlack,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W300,
-                                        modifier = Modifier.padding(top = 4.dp)
+                                        text = stringResource(resource = Res.string.carbon_footprint),
+                                        color = Color(0xFF0B513D),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.W400,
+                                        modifier = Modifier
+                                            .padding(top = 4.dp)
                                     )
                                 }
 
                             }
 
                             Row(
-                                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 16.dp).clip(RoundedCornerShape(8.dp))
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 16.dp,top = 8.dp, bottom = 16.dp)
+                                    .clip(RoundedCornerShape(12.dp))
                                     .fillMaxWidth()
-                                    .background(emeraldGreen),
+                                    .background(deepGreen)
+                                    .clickable{
+                                        scope.launch {
+                                            rideViewModel.publishRide(
+                                                origin = "Meerut",
+                                                destination = "Delhi",
+                                                seats = 4,
+                                                price = 150.0,
+                                                startDateTime = 1778250273000,
+                                                endDateTime = 1778261073000
+                                            )
+                                        } // TODO : Need to change the default values and take from the user
+                                    },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    "Publish Ride",
+                                    text = stringResource(Res.string.publish_ride),
                                     color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.W600,
                                     modifier = Modifier.padding(vertical = 16.dp),
-                                    fontSize = 18.sp
                                 )
                             }
-
                         }
                     }
 
@@ -526,15 +561,11 @@ fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
     }
 }
 
-//@Preview
-//@Composable
-//fun TopHeaderPreview() {
-//    TopHeader({},{})
-//}
-
-
 @Preview(device = PIXEL_9)
 @Composable
 fun FindRidePreview() {
-    FindRideScreen()
+    val rideViewModel : RideViewModel = koinInject()
+    FindRideScreen(
+        rideViewModel = rideViewModel
+    )
 }
