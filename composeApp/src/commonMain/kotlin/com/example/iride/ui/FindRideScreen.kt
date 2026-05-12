@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,9 +31,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +47,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
-import com.example.iride.generated.resources.carbon_ledger
 import com.example.iride.generated.resources.estimated_carbon_saving
 import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
@@ -62,6 +69,8 @@ import com.example.iride.generated.resources.ic_user_profile
 import com.example.iride.generated.resources.offer_ride_sub_title
 import com.example.iride.generated.resources.offer_ride_title
 import com.example.iride.generated.resources.publish_ride
+import com.example.iride.generated.resources.offer_ride_departure_time_title
+
 import com.example.iride.generated.resources.route_details
 import com.example.iride.theme.darkBlue
 import com.example.iride.theme.deepGreen
@@ -76,6 +85,10 @@ import com.example.iride.theme.strokeLightGreen
 import com.example.iride.ui.common.TopHeader
 import com.example.iride.viewmodel.RideViewModel
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import network.chaintech.kmp_date_time_picker.utils.now
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -97,417 +110,459 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
-            Column(
+            var showDatePicker by remember { mutableStateOf(false) }
+            var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
+            val departureText by remember {
+                derivedStateOf {
+                    departureDateTime.let {
+                        it.date.toString() + " " + it.time.toString()
+                    }
+                }
+            }
+
+            Surface(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(primaryBackground)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                        text = stringResource(Res.string.offer_ride_title), color = deepGreen,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.W400,
-                    )
-                    Text(
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                        text = stringResource(Res.string.offer_ride_sub_title), color = mutedGreen,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W400,
-                    )
-
-                    Card(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 6.dp
+                if (showDatePicker) {
+                    WheelDatePickerBottomSheet(stringResource(Res.string.offer_ride_departure_time_title)) {
+                        if (it != null) {
+                            departureDateTime = it
+                        }
+                        showDatePicker = false
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(primaryBackground)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                            text = stringResource(Res.string.offer_ride_title), color = deepGreen,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.W400,
                         )
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
-                            Text(
-                                text = stringResource(Res.string.route_details).uppercase(),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.W500,
-                                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp)
+                        Text(
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                            text = stringResource(Res.string.offer_ride_sub_title),
+                            color = mutedGreen,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W400,
+                        )
+
+                        Card(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 6.dp
                             )
-
-                            Row(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .padding(top = 8.dp, bottom = 8.dp)
-                                    .clip(
-                                        RoundedCornerShape(8.dp)
-                                    ).border(
-                                        width = 1.dp,
-                                        color = greyLight,
-                                        shape = RoundedCornerShape(8.dp)
-                                    ).background(primaryBackground)
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                                    .clickable(true, onClick = {
-                                        // open the location search page with autocomplete or map
-                                    }),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(start = 8.dp)
-                                        .padding(vertical = 8.dp)
-                                        .height(50.dp),
-                                    verticalArrangement = Arrangement.Top,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        imageVector = vectorResource(Res.drawable.ic_location),
-                                        contentDescription = null,
-                                        tint = darkBlue,
-                                        modifier = Modifier
-                                            .width(10.dp)
-                                            .height(12.dp)
-                                    )
-                                    Spacer(
-                                        modifier = Modifier
-                                            .padding(top = 4.dp)
-                                            .width(1.dp)
-                                            .background(greyLight)
-                                            .height(16.dp)
-                                    )
-
-                                }
-
+                        ) {
+                            Column(modifier = Modifier.fillMaxWidth().background(Color.White)) {
                                 Text(
-                                    "Downtown Tech District",
-                                    color = darkBlue,
+                                    text = stringResource(Res.string.route_details).uppercase(),
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.W300,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp)
+                                    fontWeight = FontWeight.W500,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                        .padding(top = 16.dp)
                                 )
-                            }
 
-
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                                    .padding(bottom = 8.dp)
-                                    .clip(
-                                        RoundedCornerShape(8.dp)
-                                    ).border(
-                                        width = 1.dp,
-                                        color = greyLight,
-                                        shape = RoundedCornerShape(8.dp)
-                                    ).background(primaryBackground).fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .clickable(true, onClick = {
-                                    }),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
-                                        .padding(start = 8.dp)
-                                        .padding(vertical = 8.dp)
-                                        .fillMaxHeight(),
-                                    verticalArrangement = Arrangement.Top,
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                        .padding(horizontal = 16.dp)
+                                        .padding(top = 8.dp, bottom = 8.dp)
+                                        .clip(
+                                            RoundedCornerShape(8.dp)
+                                        ).border(
+                                            width = 1.dp,
+                                            color = greyLight,
+                                            shape = RoundedCornerShape(8.dp)
+                                        ).background(primaryBackground)
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .clickable(true, onClick = {
+                                            // open the location search page with autocomplete or map
+                                        }),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = vectorResource(Res.drawable.ic_flag),
-                                        contentDescription = null,
-                                        tint = emeraldGreen,
+                                    Column(
                                         modifier = Modifier
-                                            .width(9.dp)
-                                            .height(10.dp)
-                                    )
-                                }
-
-                                Text(
-                                    text = "Downtown Tech District",
-                                    color = darkBlue,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.W300,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp)
-                                        .padding(vertical = 16.dp)
-                                )
-                            }
-
-                            Row {
-                                Column(modifier = Modifier.fillMaxWidth(0.5f)) {
-                                    Text(
-                                        "DEPARTURE",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W500,
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                            .padding(top = 16.dp)
-                                    )
-
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                            .padding(top = 8.dp, bottom = 8.dp).clip(
-                                                RoundedCornerShape(8.dp)
-                                            ).border(
-                                                width = 1.dp,
-                                                color = greyLight,
-                                                shape = RoundedCornerShape(8.dp)
-                                            ).background(primaryBackground).fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .clickable(true, onClick = {
-                                                // open the location search page with autocomplete or map
-                                            }),
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .padding(start = 8.dp)
+                                            .padding(vertical = 8.dp)
+                                            .height(50.dp),
+                                        verticalArrangement = Arrangement.Top,
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Column(
-                                            modifier = Modifier.padding(start = 8.dp)
-                                                .padding(vertical = 8.dp)
-                                                .fillMaxHeight(),
-                                            verticalArrangement = Arrangement.Top,
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Icon(
-                                                imageVector = vectorResource(Res.drawable.ic_time),
-                                                contentDescription = null,
-                                                tint = emeraldGreen,
-                                                modifier = Modifier.size(10.dp)
-                                            )
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_location),
+                                            contentDescription = null,
+                                            tint = darkBlue,
+                                            modifier = Modifier
+                                                .width(10.dp)
+                                                .height(12.dp)
+                                        )
+                                        Spacer(
+                                            modifier = Modifier
+                                                .padding(top = 4.dp)
+                                                .width(1.dp)
+                                                .background(greyLight)
+                                                .height(16.dp)
+                                        )
 
-                                        }
+                                    }
 
-                                        Text(
-                                            "08:30 AM", color = darkBlue,
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.W300,
-                                            modifier = Modifier.padding(start = 8.dp)
-                                                .padding(vertical = 16.dp)
+                                    Text(
+                                        "Downtown Tech District",
+                                        color = darkBlue,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.W300,
+                                        modifier = Modifier
+                                            .padding(start = 8.dp)
+                                    )
+                                }
+
+
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                        .padding(bottom = 8.dp)
+                                        .clip(
+                                            RoundedCornerShape(8.dp)
+                                        ).border(
+                                            width = 1.dp,
+                                            color = greyLight,
+                                            shape = RoundedCornerShape(8.dp)
+                                        ).background(primaryBackground).fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .clickable(true, onClick = {
+                                        }),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(start = 8.dp)
+                                            .padding(vertical = 8.dp)
+                                            .fillMaxHeight(),
+                                        verticalArrangement = Arrangement.Top,
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_flag),
+                                            contentDescription = null,
+                                            tint = emeraldGreen,
+                                            modifier = Modifier
+                                                .width(9.dp)
+                                                .height(10.dp)
                                         )
                                     }
 
-                                }
-                                Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(
-                                        "SEATS",
+                                        text = "Downtown Tech District",
+                                        color = darkBlue,
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.W500,
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                            .padding(top = 16.dp)
+                                        fontWeight = FontWeight.W300,
+                                        modifier = Modifier
+                                            .padding(start = 8.dp)
+                                            .padding(vertical = 16.dp)
                                     )
+                                }
 
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 16.dp)
-                                            .padding(top = 8.dp, bottom = 8.dp).clip(
-                                                RoundedCornerShape(8.dp)
-                                            ).border(
-                                                width = 1.dp,
-                                                color = greyLight,
-                                                shape = RoundedCornerShape(8.dp)
-                                            ).background(primaryBackground).fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .clickable(true, onClick = {
-                                            }),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(start = 8.dp)
-                                                .padding(vertical = 8.dp)
-                                                .fillMaxHeight(),
-                                            verticalArrangement = Arrangement.Top,
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Icon(
-                                                imageVector = vectorResource(Res.drawable.ic_seat),
-                                                contentDescription = null,
-                                                tint = emeraldGreen,
-                                                modifier = Modifier.size(10.dp)
-                                            )
-                                        }
-
+                                Row {
+                                    Column(modifier = Modifier.fillMaxWidth(0.5f)) {
                                         Text(
-                                            "2 Seats", color = darkBlue,
+                                            "DEPARTURE",
                                             fontSize = 12.sp,
-                                            fontWeight = FontWeight.W300,
-                                            modifier = Modifier.padding(start = 8.dp)
-                                                .padding(vertical = 16.dp)
+                                            fontWeight = FontWeight.W500,
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                                .padding(top = 16.dp)
                                         )
 
                                         Row(
-                                            horizontalArrangement = Arrangement.End,
-                                            modifier = Modifier.fillMaxWidth().padding(end = 16.dp)
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                                .padding(top = 8.dp, bottom = 8.dp).clip(
+                                                    RoundedCornerShape(8.dp)
+                                                ).border(
+                                                    width = 1.dp,
+                                                    color = greyLight,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ).background(primaryBackground).fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .clickable(true, onClick = {
+                                                    showDatePicker = true
+                                                }),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
-                                                imageVector = vectorResource(Res.drawable.ic_right_arrow),
-                                                contentDescription = null,
-                                                tint = greyLight,
-                                                modifier = Modifier.rotate(90f),
+                                            Column(
+                                                modifier = Modifier.padding(start = 8.dp)
+                                                    .padding(vertical = 8.dp)
+                                                    .fillMaxHeight(),
+                                                verticalArrangement = Arrangement.Top,
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Icon(
+                                                    imageVector = vectorResource(Res.drawable.ic_time),
+                                                    contentDescription = null,
+                                                    tint = emeraldGreen,
+                                                    modifier = Modifier.size(10.dp)
+                                                )
+
+                                            }
+
+                                            Text(
+                                                departureText, color = darkBlue,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.W300,
+                                                modifier = Modifier.padding(start = 8.dp)
+                                                    .padding(vertical = 16.dp)
                                             )
                                         }
 
+                                    }
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            "SEATS",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.W500,
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                                .padding(top = 16.dp)
+                                        )
+
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                                .padding(top = 8.dp, bottom = 8.dp).clip(
+                                                    RoundedCornerShape(8.dp)
+                                                ).border(
+                                                    width = 1.dp,
+                                                    color = greyLight,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ).background(primaryBackground).fillMaxWidth()
+                                                .wrapContentHeight()
+                                                .clickable(true, onClick = {
+                                                }),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(
+                                                modifier = Modifier.padding(start = 8.dp)
+                                                    .padding(vertical = 8.dp)
+                                                    .fillMaxHeight(),
+                                                verticalArrangement = Arrangement.Top,
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Icon(
+                                                    imageVector = vectorResource(Res.drawable.ic_seat),
+                                                    contentDescription = null,
+                                                    tint = emeraldGreen,
+                                                    modifier = Modifier.size(10.dp)
+                                                )
+                                            }
+
+                                            Text(
+                                                "2 Seats", color = darkBlue,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.W300,
+                                                modifier = Modifier.padding(start = 8.dp)
+                                                    .padding(vertical = 16.dp)
+                                            )
+
+                                            Row(
+                                                horizontalArrangement = Arrangement.End,
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(end = 16.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = vectorResource(Res.drawable.ic_right_arrow),
+                                                    contentDescription = null,
+                                                    tint = greyLight,
+                                                    modifier = Modifier.rotate(90f),
+                                                )
+                                            }
+
+
+                                        }
 
                                     }
-
                                 }
-                            }
 
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                                    .padding(top = 8.dp, bottom = 8.dp)
-                                    .clip(
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .border(
-                                        width = 1.dp,
-                                        color = strokeLightGreen,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .background(lightGreen.copy(.2f))
-                                    .fillMaxWidth()
-                                    .wrapContentHeight()
-                                    .clickable(true, onClick = {
-                                        // open the location search page with autocomplete or map
-                                    }),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
                                 Row(
-                                    modifier = Modifier
-                                        .padding(start = 16.dp)
-                                        .padding(vertical = 16.dp)
-                                        .clip(CircleShape)
-                                        .background(emeraldGreen)
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                        .padding(top = 8.dp, bottom = 8.dp)
+                                        .clip(
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = strokeLightGreen,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .background(lightGreen.copy(.2f))
+                                        .fillMaxWidth()
+                                        .wrapContentHeight()
+                                        .clickable(true, onClick = {
+                                            // open the location search page with autocomplete or map
+                                        }),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .size(16.dp),
-                                        painter = painterResource(
-                                            Res.drawable.ic_leaf
-                                        ),
-                                        contentDescription = null,
-                                        tint = strokeLightGreen
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .padding(start = 16.dp)
-                                        .padding(vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        stringResource(resource = Res.string.estimated_carbon_saving),
-                                        color = Color((0xFF003527)),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.W600,
-                                        lineHeight = 16.sp
-                                    )
-
-                                    Text(
-                                        text = stringResource(resource = Res.string.carbon_footprint),
-                                        color = Color(0xFF0B513D),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.W400,
-                                        modifier = Modifier
-                                            .padding(top = 4.dp)
-                                    )
-                                }
-
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .padding(start = 16.dp, end = 16.dp,top = 8.dp, bottom = 16.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .fillMaxWidth()
-                                    .background(deepGreen)
-                                    .clickable{
-                                        scope.launch {
-                                            rideViewModel.publishRide(
-                                                origin = "Meerut",
-                                                destination = "Delhi",
-                                                seats = 4,
-                                                price = 150.0,
-                                                startDateTime = 1778250273000,
-                                                endDateTime = 1778261073000
-                                            )
-                                        } // TODO : Need to change the default values and take from the user
-                                    },
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.publish_ride),
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.W600,
-                                    modifier = Modifier.padding(vertical = 16.dp),
-                                )
-                            }
-                        }
-                    }
-
-
-                    Box(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            .fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp))
-                    ) {
-                        Image(
-                            painter = painterResource(resource = Res.drawable.ic_publish_ride_map),
-                            contentDescription = null,
-                            contentScale = ContentScale.FillBounds, // Stretches to fill the box
-                            modifier = Modifier.matchParentSize() // Ensures image matches Box size
-                        )
-                        // Other UI elements (Text, Buttons, etc.) go here and will appear on top
-                        Column(
-                            modifier = Modifier.fillMaxWidth(0.5f)
-                                .align(Alignment.TopEnd).padding(end = 8.dp, top = 8.dp)
-                                .clip(RoundedCornerShape(8.dp)).background(paleGreen)
-                        ) {
-
-                            Row(
-                                modifier = Modifier.padding(
-                                    start = 16.dp,
-                                    top = 16.dp,
-                                    end = 8.dp,
-                                    bottom = 16.dp
-                                )
-                            ) {
-                                Canvas(modifier = Modifier.size(15.dp), onDraw = {
-                                    drawCircle(color = emeraldGreen)
-                                })
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(start = 8.dp, end = 8.dp),
-                                    horizontalAlignment = Alignment.Start
-                                ) {
-
-                                    Text(
-                                        "Optimal Eco-Route",
-                                        modifier = Modifier.padding(start = 8.dp),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.W500
-                                    )
-
                                     Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(top = 8.dp)
+                                        modifier = Modifier
+                                            .padding(start = 16.dp)
+                                            .padding(vertical = 16.dp)
+                                            .clip(CircleShape)
+                                            .background(emeraldGreen)
+                                    ) {
+                                        Icon(
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .size(16.dp),
+                                            painter = painterResource(
+                                                Res.drawable.ic_leaf
+                                            ),
+                                            contentDescription = null,
+                                            tint = strokeLightGreen
+                                        )
+                                    }
+                                    Column(
+                                        modifier = Modifier
+                                            .padding(start = 16.dp)
+                                            .padding(vertical = 8.dp)
                                     ) {
                                         Text(
-                                            "12.5 km",
-                                            modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+                                            stringResource(resource = Res.string.estimated_carbon_saving),
+                                            color = Color((0xFF003527)),
                                             fontSize = 14.sp,
-                                            fontWeight = FontWeight.W500
+                                            fontWeight = FontWeight.W600,
+                                            lineHeight = 16.sp
                                         )
-                                        Canvas(modifier = Modifier.size(5.dp), onDraw = {
-                                            drawCircle(color = primaryBlack)
-                                        })
+
                                         Text(
-                                            "24 mins",
-                                            modifier = Modifier.padding(end = 4.dp, start = 4.dp),
+                                            text = stringResource(resource = Res.string.carbon_footprint),
+                                            color = Color(0xFF0B513D),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W400,
+                                            modifier = Modifier
+                                                .padding(top = 4.dp)
+                                        )
+                                    }
+
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 16.dp,
+                                            end = 16.dp,
+                                            top = 8.dp,
+                                            bottom = 16.dp
+                                        )
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .fillMaxWidth()
+                                        .background(deepGreen)
+                                        .clickable {
+                                            scope.launch {
+                                                rideViewModel.publishRide(
+                                                    origin = "Meerut",
+                                                    destination = "Delhi",
+                                                    seats = 4,
+                                                    price = 150.0,
+                                                    startDateTime = departureDateTime.toInstant(
+                                                        TimeZone.currentSystemDefault()
+                                                    ).epochSeconds,
+                                                    endDateTime = departureDateTime.toInstant(
+                                                        TimeZone.currentSystemDefault()
+                                                    ).epochSeconds
+                                                )
+                                            }
+                                        },
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.publish_ride),
+                                        color = Color.White,
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.W600,
+                                        modifier = Modifier.padding(vertical = 16.dp),
+                                    )
+                                }
+                            }
+                        }
+
+
+                        Box(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                .fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(12.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(resource = Res.drawable.ic_publish_ride_map),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds, // Stretches to fill the box
+                                modifier = Modifier.matchParentSize() // Ensures image matches Box size
+                            )
+                            // Other UI elements (Text, Buttons, etc.) go here and will appear on top
+                            Column(
+                                modifier = Modifier.fillMaxWidth(0.5f)
+                                    .align(Alignment.TopEnd).padding(end = 8.dp, top = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp)).background(paleGreen)
+                            ) {
+
+                                Row(
+                                    modifier = Modifier.padding(
+                                        start = 16.dp,
+                                        top = 16.dp,
+                                        end = 8.dp,
+                                        bottom = 16.dp
+                                    )
+                                ) {
+                                    Canvas(modifier = Modifier.size(15.dp), onDraw = {
+                                        drawCircle(color = emeraldGreen)
+                                    })
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(start = 8.dp, end = 8.dp),
+                                        horizontalAlignment = Alignment.Start
+                                    ) {
+
+                                        Text(
+                                            "Optimal Eco-Route",
+                                            modifier = Modifier.padding(start = 8.dp),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.W500
                                         )
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(top = 8.dp)
+                                        ) {
+                                            Text(
+                                                "12.5 km",
+                                                modifier = Modifier.padding(
+                                                    start = 4.dp,
+                                                    end = 4.dp
+                                                ),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.W500
+                                            )
+                                            Canvas(modifier = Modifier.size(5.dp), onDraw = {
+                                                drawCircle(color = primaryBlack)
+                                            })
+                                            Text(
+                                                "24 mins",
+                                                modifier = Modifier.padding(
+                                                    end = 4.dp,
+                                                    start = 4.dp
+                                                ),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.W500
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
+                    }
                 }
             }
         }
@@ -562,10 +617,57 @@ fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
     }
 }
 
+
+@Composable
+fun WheelDatePickerBottomSheet(title: String, dateOfBirth: (LocalDateTime?) -> Unit) {
+
+    var showDatePicker by remember { mutableStateOf(true) }
+    var selectedDate by remember { mutableStateOf("") }
+
+
+    WheelDateTimePickerView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 18.dp, bottom = 18.dp),
+        showDatePicker = showDatePicker,
+        title = title,
+        doneLabel = "Done",
+        titleStyle = TextStyle(
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = emeraldGreen,
+        ),
+        doneLabelStyle = TextStyle(
+            fontSize = 16.sp,
+            fontWeight = FontWeight(600),
+            color = emeraldGreen,
+        ),
+
+        selectorProperties = WheelPickerDefaults.selectorProperties(
+            borderColor = Color.LightGray,
+        ),
+        rowCount = 5,
+        height = 180.dp,
+        dragHandle = {
+
+        },
+        shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp),
+        dateTimePickerView = DateTimePickerView.BOTTOM_SHEET_VIEW,
+        onDoneClick = {
+
+            dateOfBirth.invoke(it)
+        },
+        showMonthAsNumber = true,
+        onDismiss = {
+            dateOfBirth.invoke(null)
+        }
+    )
+}
+
 @Preview(device = PIXEL_9)
 @Composable
 fun FindRidePreview() {
-    val rideViewModel : RideViewModel = koinInject()
+    val rideViewModel: RideViewModel = koinInject()
     FindRideScreen(
         rideViewModel = rideViewModel
     )
