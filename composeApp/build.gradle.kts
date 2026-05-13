@@ -65,6 +65,8 @@ kotlin {
 //            implementation(libs.koin.compose)
             implementation(libs.firebase.auth.ktx)
             implementation("io.ktor:ktor-client-okhttp:2.3.7")
+            implementation("io.insert-koin:koin-android:3.5.6")
+            implementation("com.google.android.gms:play-services-location:21.2.0")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

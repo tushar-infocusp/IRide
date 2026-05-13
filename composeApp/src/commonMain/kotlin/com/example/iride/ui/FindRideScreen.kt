@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
@@ -110,6 +112,8 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
+            val lastFetchedLocation = rideViewModel.lastLocation.collectAsStateWithLifecycle()
+
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
             val departureText by remember {
@@ -120,6 +124,9 @@ fun FindRideScreen(
                 }
             }
 
+            LaunchedEffect(Unit) {
+                rideViewModel.fetchLocation()
+            }
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
@@ -142,6 +149,15 @@ fun FindRideScreen(
                     verticalArrangement = Arrangement.Top
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
+                        if (lastFetchedLocation.value != null) {
+                            Text(
+                                "Latitude: ${lastFetchedLocation.value?.latitude ?: ""} \n" +
+                                        "Longitude: ${lastFetchedLocation.value?.longitude ?: ""}",
+                                color = deepGreen,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.W400,
+                            )
+                        }
                         Text(
                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                             text = stringResource(Res.string.offer_ride_title), color = deepGreen,
