@@ -97,6 +97,15 @@ kotlin {
             // ✅ ONLY here
             implementation(libs.maplibre.compose)
             implementation(libs.spatialk.geojson)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
+            implementation("io.ktor:ktor-client-core:2.3.7")
+            implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+
+            implementation("network.chaintech:kmp-date-time-picker:1.1.1")
+
+
         }
 
         iosMain.dependencies {
