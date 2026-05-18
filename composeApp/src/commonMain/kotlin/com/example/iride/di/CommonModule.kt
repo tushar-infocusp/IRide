@@ -1,7 +1,12 @@
 package com.example.iride.di
 
+import com.example.iride.Platform
 import com.example.iride.client.ApiClient
 import com.example.iride.repository.api.LocationRepository
+import com.example.iride.getPlatform
+import com.example.iride.location.LocationRepository
+import com.example.iride.location.LocationRepositoryImpl
+import com.example.iride.location.provideLocationService
 import com.example.iride.repository.api.RideRepository
 import com.example.iride.repository.manager.LocationRepositoryImpl
 import com.example.iride.repository.manager.RideRepositoryImpl

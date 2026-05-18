@@ -21,7 +21,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -74,6 +74,8 @@ kotlin {
 
             // ✅ ONLY engine here
             implementation(libs.maplibre.android)
+            implementation("io.insert-koin:koin-android:3.5.6")
+            implementation("com.google.android.gms:play-services-location:21.2.0")
         }
 
         commonMain.dependencies {
@@ -83,7 +85,7 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
-
+            implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
