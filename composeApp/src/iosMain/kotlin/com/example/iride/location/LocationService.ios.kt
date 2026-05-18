@@ -48,24 +48,32 @@ actual class LocationService :
         val location =
             didUpdateLocations.lastOrNull() as? CLLocation
 
+        var fetchedLocation = false
         continuation?.resume(
             location?.coordinate?.useContents {
-                LocationData(latitude, longitude) {
-
-                }
+                println("Latitude : $latitude Longitude : $longitude")
+                fetchedLocation =  true
+                LocationData(latitude, longitude)
             }
         )
 
         continuation = null
-
-        locationManager.stopUpdatingLocation()
+        if (fetchedLocation)
+            locationManager.stopUpdatingLocation()
     }
 
     override fun locationManager(
         manager: CLLocationManager,
         didFailWithError: NSError
     ) {
+        didFailWithError.toString().let {
+            println("Error: $it")
+        }
         continuation?.resume(null)
         continuation = null
     }
+}
+
+actual fun provideLocationService(): LocationService {
+    return LocationService()
 }

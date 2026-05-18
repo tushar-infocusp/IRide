@@ -5,23 +5,21 @@ import androidx.lifecycle.viewModelScope
 import com.example.iride.location.LocationData
 import com.example.iride.location.LocationRepository
 import com.example.iride.repository.api.RideRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class RideViewModel(
-    val rideRepository: RideRepository,
-    val locationRepository: LocationRepository
+    val rideRepository: RideRepository, val locationRepository: LocationRepository
 ) : ViewModel() {
 
     private val _rideId = MutableStateFlow("")
     val rideId: StateFlow<String> = _rideId.asStateFlow()
 
 
+    // Consume this location to get the last device location
+    // TODO Check the location permission for android before this(by pass by providing permission)
     private val _lastLocation = MutableStateFlow<LocationData?>(value = null)
     val lastLocation: StateFlow<LocationData?> = _lastLocation.asStateFlow()
 
@@ -56,14 +54,11 @@ class RideViewModel(
         }
     }
 
+    // Function to fetch location once permission is granted.
     fun fetchLocation() {
         viewModelScope.launch {
-            if (locationRepository!=null){
-                print("Location repo init successfully")
-            }
             val location = locationRepository.getCurrentLocation()
             location?.let {
-
                 _lastLocation.value = it
             }
         }

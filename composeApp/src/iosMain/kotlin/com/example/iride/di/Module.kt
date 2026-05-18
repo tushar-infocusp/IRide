@@ -19,11 +19,9 @@ val iosModule = module {
     }
 
     single {
-        LocationService()
-    }
-
-    single {
-        RideViewModel(get(), get())
+        RideViewModel(
+            get(), get()
+        )
     }
 
 

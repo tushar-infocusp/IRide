@@ -8,11 +8,6 @@ import org.koin.dsl.module
 
 
 val androidModule = module {
-
-    single {
-        LocationService()
-    }
-
     single { androidContext() }
 
     single<OTPAuthManager> {

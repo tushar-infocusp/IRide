@@ -112,8 +112,6 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
-            val lastFetchedLocation = rideViewModel.lastLocation.collectAsStateWithLifecycle()
-
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
             val departureText by remember {
@@ -149,15 +147,6 @@ fun FindRideScreen(
                     verticalArrangement = Arrangement.Top
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        if (lastFetchedLocation.value != null) {
-                            Text(
-                                "Latitude: ${lastFetchedLocation.value?.latitude ?: ""} \n" +
-                                        "Longitude: ${lastFetchedLocation.value?.longitude ?: ""}",
-                                color = deepGreen,
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.W400,
-                            )
-                        }
                         Text(
                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                             text = stringResource(Res.string.offer_ride_title), color = deepGreen,

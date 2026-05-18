@@ -40,10 +40,20 @@ actual class LocationService {
                                 )
                             )
                         }
+                    } else {
+                        if (continuation.isActive) {
+                            continuation.resume(null)
+                        }
                     }
                 }.addOnFailureListener { failure ->
-                    continuation.resumeWithException(failure)
+                    if (continuation.isActive) {
+                        continuation.resumeWithException(failure)
+                    }
                 }
             }
         }
+}
+
+actual fun provideLocationService(): LocationService {
+    return LocationService()
 }
