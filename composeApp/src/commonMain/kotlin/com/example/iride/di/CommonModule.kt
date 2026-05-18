@@ -7,7 +7,7 @@ import com.example.iride.repository.manager.LocationRepositoryImpl
 import com.example.iride.repository.manager.RideRepositoryImpl
 import com.example.iride.viewmodel.LocationViewModel
 import com.example.iride.viewmodel.RideViewModel
-import io.ktor.client.HttpClient
+import com.example.iride.util.LocationService
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
@@ -35,7 +35,8 @@ val clientModule = module {
 val appModule = module {
     single<RideRepository> { RideRepositoryImpl(get()) }
     single<LocationRepository> { LocationRepositoryImpl(get()) }
+    single<LocationService> { LocationService() }
 
     factory { RideViewModel(get()) }
-    factory { LocationViewModel(get()) }
+    factory { LocationViewModel(get(), get()) }
 }

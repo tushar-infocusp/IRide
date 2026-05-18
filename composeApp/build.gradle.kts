@@ -51,6 +51,10 @@ kotlin {
             version = "10.29.0"
         }
 
+        pod("MapboxMaps") {
+            version = "~> 11.0"
+        }
+
         framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -66,6 +70,7 @@ kotlin {
 
             implementation(libs.firebase.auth.ktx)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.google.play.services.location)
 
             // ✅ ONLY engine here
             implementation(libs.maplibre.android)
@@ -75,6 +80,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
 
@@ -99,9 +105,6 @@ kotlin {
             implementation(libs.spatialk.geojson)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation("io.ktor:ktor-client-core:2.3.7")
-            implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
 
             implementation("network.chaintech:kmp-date-time-picker:1.1.1")
 

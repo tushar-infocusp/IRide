@@ -19,6 +19,7 @@ koin = "4.2.1"
 voyagerTabNavigator = "1.0.1"
 maplibreCompose = "0.12.1"
 maplibreAndroid = "11.13.0"
+playServicesLocation = "21.3.0"
 spatialk = "0.6.0"
 
 [libraries]
@@ -31,6 +32,8 @@ androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+compose-materialIconsExtended = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
+compose-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeMultiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
@@ -48,6 +51,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 insert-koin-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibreCompose" }
 maplibre-android = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibreAndroid" }
+google-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 spatialk-geojson = { module = "org.maplibre.spatialk:geojson", version.ref = "spatialk" }
 
 [plugins]
