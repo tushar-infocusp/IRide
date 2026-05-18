@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -45,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,18 +55,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.iride.generated.resources.Res
-import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
 import com.example.iride.generated.resources.estimated_carbon_saving
 import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
 import com.example.iride.generated.resources.ic_location
-import com.example.iride.generated.resources.ic_notification
 import com.example.iride.generated.resources.ic_publish_ride_map
 import com.example.iride.generated.resources.ic_right_arrow
 import com.example.iride.generated.resources.ic_seat
 import com.example.iride.generated.resources.ic_time
-import com.example.iride.generated.resources.ic_user_profile
 import com.example.iride.generated.resources.offer_ride_sub_title
 import com.example.iride.generated.resources.offer_ride_title
 import com.example.iride.generated.resources.publish_ride
@@ -111,11 +109,13 @@ fun FindRideScreen(
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
             var showDatePicker by remember { mutableStateOf(false) }
-            var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
+            var departureDateTime by remember { mutableStateOf(LocalDateTime.now()) }
+            var selectedSeatOption by remember { mutableStateOf(1) }
+
             val departureText by remember {
                 derivedStateOf {
                     departureDateTime.let {
-                        it.date.toString() + " " + it.time.toString()
+                        it.date.toString() + " " + it.time.hour.toString() + ":" + it.time.minute.toString()
                     }
                 }
             }
@@ -315,6 +315,7 @@ fun FindRideScreen(
                                                 departureText, color = darkBlue,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.W300,
+                                                maxLines = 1,
                                                 modifier = Modifier.padding(start = 8.dp)
                                                     .padding(vertical = 16.dp)
                                             )
@@ -322,6 +323,9 @@ fun FindRideScreen(
 
                                     }
                                     Column(modifier = Modifier.fillMaxWidth()) {
+                                        val options = listOf(1, 2, 3, 4)
+                                        var showSeatSelection by remember { mutableStateOf(false) }
+
                                         Text(
                                             "SEATS",
                                             fontSize = 12.sp,
@@ -341,6 +345,7 @@ fun FindRideScreen(
                                                 ).background(primaryBackground).fillMaxWidth()
                                                 .wrapContentHeight()
                                                 .clickable(true, onClick = {
+                                                    showSeatSelection = true
                                                 }),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
@@ -360,12 +365,43 @@ fun FindRideScreen(
                                             }
 
                                             Text(
-                                                "2 Seats", color = darkBlue,
+                                                if (selectedSeatOption <= 1) {
+                                                    "$selectedSeatOption Seat"
+                                                } else {
+                                                    "$selectedSeatOption Seats"
+                                                }, color = darkBlue,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.W300,
                                                 modifier = Modifier.padding(start = 8.dp)
                                                     .padding(vertical = 16.dp)
                                             )
+
+                                            DropdownMenu(
+                                                expanded = showSeatSelection,
+                                                onDismissRequest = {
+                                                    showSeatSelection = false
+                                                }
+                                            ) {
+                                                options.forEach { option ->
+                                                    DropdownMenuItem(
+                                                        text = {
+                                                            Text(
+                                                                if (option <= 1) {
+                                                                    "$option Seat"
+                                                                } else {
+                                                                    "$option Seats"
+                                                                }, color = darkBlue,
+                                                                fontSize = 12.sp,
+                                                                fontWeight = FontWeight.W300,
+                                                            )
+                                                        },
+                                                        onClick = {
+                                                            selectedSeatOption = option
+                                                            showSeatSelection = false
+                                                        }
+                                                    )
+                                                }
+                                            }
 
                                             Row(
                                                 horizontalArrangement = Arrangement.End,
@@ -464,7 +500,7 @@ fun FindRideScreen(
                                                 rideViewModel.publishRide(
                                                     origin = "Meerut",
                                                     destination = "Delhi",
-                                                    seats = 4,
+                                                    seats = selectedSeatOption,
                                                     price = 150.0,
                                                     startDateTime = departureDateTime.toInstant(
                                                         TimeZone.currentSystemDefault()
@@ -565,54 +601,6 @@ fun FindRideScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
-    Card(
-        shape = RectangleShape,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier.background(Color.White).fillMaxWidth().padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End
-        ) {
-            Row(
-                modifier = Modifier.background(Color.White).weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_profile),
-                    contentDescription = null,
-                    tint = null,
-                    modifier = Modifier.clip(CircleShape).clickable(true, onClick = {
-                        onProfileClick()
-                    })
-
-                )
-
-                Text(
-                    modifier = Modifier.padding(all = 16.dp),
-                    text = stringResource(Res.string.app_name), color = emeraldGreen,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.W700,
-                )
-            }
-            Icon(
-                painter = painterResource(Res.drawable.ic_notification),
-                contentDescription = null,
-                tint = null,
-                modifier = Modifier.clickable(true, onClick = {
-                    onNotificationClick()
-                })
-            )
-
         }
     }
 }
