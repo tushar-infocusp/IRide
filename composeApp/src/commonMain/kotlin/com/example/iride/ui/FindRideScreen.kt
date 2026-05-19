@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -112,6 +113,10 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
+            val lastLocation = rideViewModel.lastLocation.collectAsState()
+            if (lastLocation.value!=null){
+                Text("Last location Latitude: "+lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
+            }
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
             val departureText by remember {

@@ -1,5 +1,6 @@
 package com.example.iride.location
 
+import com.example.iride.permission.PermissionHandler
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.suspendCancellableCoroutine

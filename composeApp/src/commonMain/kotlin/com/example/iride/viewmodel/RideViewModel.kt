@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iride.location.LocationData
 import com.example.iride.location.LocationRepository
+import com.example.iride.permission.Permission
+import com.example.iride.permission.PermissionHandler
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +13,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class RideViewModel(
-    val rideRepository: RideRepository, val locationRepository: LocationRepository
+    val rideRepository: RideRepository, val locationRepository: LocationRepository,
+    val permissionManager: PermissionHandler
 ) : ViewModel() {
 
     private val _rideId = MutableStateFlow("")
@@ -57,10 +60,18 @@ class RideViewModel(
     // Function to fetch location once permission is granted.
     fun fetchLocation() {
         viewModelScope.launch {
-            val location = locationRepository.getCurrentLocation()
-            location?.let {
-                _lastLocation.value = it
+            if (permissionManager.checkPermission(arrayOf(Permission.LOCATION)) && permissionManager.enableGps()) {
+                val location = locationRepository.getCurrentLocation()
+                location?.let {
+                    _lastLocation.value = it
+                }
             }
+        }
+    }
+
+    fun onPermissionResult(location: Permission, granted: Boolean) {
+        if (granted) {
+            fetchLocation()
         }
     }
 }

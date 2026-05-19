@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import com.example.iride.data.AppContextHolder
+import com.example.iride.permission.PermissionHandler
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -18,6 +19,7 @@ actual class LocationService {
             val context = AppContextHolder.context
             val fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(context)
+
             if (ActivityCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -27,8 +29,6 @@ actual class LocationService {
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 continuation.resumeWithException(Exception("No Permission granted"))
-
-
             } else {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     if (location != null) {
@@ -39,10 +39,6 @@ actual class LocationService {
                                     longitude = location.longitude
                                 )
                             )
-                        }
-                    } else {
-                        if (continuation.isActive) {
-                            continuation.resume(null)
                         }
                     }
                 }.addOnFailureListener { failure ->
