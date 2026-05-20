@@ -13,19 +13,12 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
-import kotlin.coroutines.resume
-import kotlinx.cinterop.useContents
-import kotlinx.coroutines.suspendCancellableCoroutine
-import platform.CoreLocation.CLLocation
-import platform.Foundation.NSError
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.NSObject
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 actual class PermissionHandler {
 
@@ -92,13 +85,9 @@ actual class PermissionHandler {
     actual suspend fun requestPermission(permission: Array<Permission>): Boolean {
         var allPermissionGranted = true
         permission.forEach {
-
-
             val granted = when (it) {
-
                 Permission.CAMERA -> {
-
-                    suspendCoroutine { continuation ->
+                    suspendCancellableCoroutine { continuation ->
 
                         AVCaptureDevice.requestAccessForMediaType(
                             mediaType = AVMediaTypeVideo
@@ -118,17 +107,17 @@ actual class PermissionHandler {
                     // handled using CLLocationManager delegate
                     requestLocationPermission()
                 }
+
                 Permission.NOTIFICATION -> {
                     // handled using CLLocationManager delegate
                     suspendCancellableCoroutine { continuation ->
-
                         UNUserNotificationCenter
                             .currentNotificationCenter()
                             .requestAuthorizationWithOptions(
                                 UNAuthorizationOptionAlert or
                                         UNAuthorizationOptionBadge or
                                         UNAuthorizationOptionSound
-                            ) { granted, error ->
+                            ) { granted, _ ->
                                 continuation.resume(granted)
                             }
                     }
@@ -145,6 +134,8 @@ actual class PermissionHandler {
     }
 
     actual suspend fun enableGps(): Boolean {
+        // We don't need to enable gps for ios, it fetches the location
+        // after permission is granted(Need to double check)
         return true
     }
 
