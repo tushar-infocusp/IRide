@@ -23,11 +23,11 @@ import kotlin.coroutines.resume
 actual class PermissionHandler {
 
 
-    actual suspend fun checkPermission(permission: Array<Permission>): Boolean {
+    actual suspend fun checkPermission(permission: Array<Permission>): PermissionState {
 
-        var allGranted = true
+        var allGranted: PermissionState = PermissionState.PermissionGranted
         permission.forEach {
-            if (allGranted) {
+            if (allGranted is PermissionState.PermissionGranted) {
                 val granted = when (it) {
 
                     Permission.LOCATION -> {
@@ -71,19 +71,19 @@ actual class PermissionHandler {
                 }
 
                 if (!granted) {
-                    allGranted = granted
+                    allGranted = PermissionState.PermissionDenied(Exception("Permission denied"))
                 }
             }
         }
-        if (!allGranted) {
+        if (allGranted !is PermissionState.PermissionGranted) {
             allGranted = requestPermission(permission)
         }
         return allGranted
 
     }
 
-    actual suspend fun requestPermission(permission: Array<Permission>): Boolean {
-        var allPermissionGranted = true
+    actual suspend fun requestPermission(permission: Array<Permission>): PermissionState {
+        var allPermissionGranted: PermissionState = PermissionState.PermissionGranted
         permission.forEach {
             val granted = when (it) {
                 Permission.CAMERA -> {
@@ -127,7 +127,8 @@ actual class PermissionHandler {
                 else -> false
             }
             if (!granted) {
-                allPermissionGranted = false
+                allPermissionGranted =
+                    PermissionState.PermissionDenied(Exception("Permission denied"))
             }
         }
         return allPermissionGranted

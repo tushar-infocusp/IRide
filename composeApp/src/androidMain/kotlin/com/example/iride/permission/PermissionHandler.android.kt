@@ -26,12 +26,12 @@ actual class PermissionHandler {
     // Temporary holder for the current active UI launcher (null when app is in background)
     var launcherProvider: ActivityLauncherProvider? = null
 
-    actual suspend fun checkPermission(permission: Array<Permission>): Boolean {
+    actual suspend fun checkPermission(permission: Array<Permission>): PermissionState {
         val context = AppContextHolder.context
         val requiredPermissions = mapToAndroidPermissions(permission)
         var granted = hasPermissions(context, requiredPermissions)
 
-        if (!granted) {
+        if (granted is PermissionState.PermissionDenied) {
             granted = requestPermission(permission)
         }
         return granted
@@ -42,14 +42,12 @@ actual class PermissionHandler {
         permissions.forEach { permission ->
             val requiredPermission = when (permission) {
                 Permission.LOCATION -> arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION
                 )
 
                 Permission.CAMERA -> arrayOf(Manifest.permission.CAMERA)
                 Permission.STORAGE -> arrayOf(
-                    Manifest.permission.READ_MEDIA_VIDEO,
-                    Manifest.permission.READ_MEDIA_AUDIO
+                    Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO
                 )
 
                 Permission.NOTIFICATION -> arrayOf(Manifest.permission.POST_NOTIFICATIONS)
@@ -60,13 +58,17 @@ actual class PermissionHandler {
     }
 
 
-    actual suspend fun requestPermission(permission: Array<Permission>): Boolean {
+    actual suspend fun requestPermission(permission: Array<Permission>): PermissionState {
         return suspendCancellableCoroutine { continuation ->
             launcherProvider?.launchPermissionRequest(
                 mapToAndroidPermissions(permission)
             ) { granted ->
                 if (continuation.isActive) {
-                    continuation.resume(granted)
+                    if (granted) {
+                        continuation.resume(PermissionState.PermissionGranted)
+                    } else {
+                        continuation.resume(PermissionState.PermissionDenied(Exception("Permission denied during request")))
+                    }
                 }
             }
         }
@@ -74,7 +76,7 @@ actual class PermissionHandler {
 
     actual suspend fun enableGps(): Boolean {
         val granted = checkPermission(arrayOf(Permission.LOCATION))
-        return if (granted) {
+        return if (granted is PermissionState.PermissionGranted) {
             suspendCancellableCoroutine { continuation ->
                 checkLocationEnabled(context = AppContextHolder.context, {
                     if (continuation.isActive) {
@@ -94,25 +96,18 @@ actual class PermissionHandler {
     }
 
     fun checkLocationEnabled(
-        context: Context,
-        onEnabled: () -> Unit,
-        onDisabled: (IntentSenderRequest) -> Unit
+        context: Context, onEnabled: () -> Unit, onDisabled: (IntentSenderRequest) -> Unit
     ) {
 
-        val locationRequest =
-            LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                1000
-            ).build()
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY, 1000
+        ).build()
 
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
-        val client =
-            LocationServices.getSettingsClient(context)
+        val client = LocationServices.getSettingsClient(context)
 
-        val task =
-            client.checkLocationSettings(builder.build())
+        val task = client.checkLocationSettings(builder.build())
 
         task.addOnSuccessListener {
             onEnabled()
@@ -122,27 +117,26 @@ actual class PermissionHandler {
 
             if (exception is ResolvableApiException) {
 
-                val intentSenderRequest =
-                    IntentSenderRequest.Builder(
-                        exception.resolution
-                    ).build()
+                val intentSenderRequest = IntentSenderRequest.Builder(
+                    exception.resolution
+                ).build()
 
                 onDisabled(intentSenderRequest)
             }
         }
     }
 
-    fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
+    fun hasPermissions(context: Context, permissions: Array<String>): PermissionState {
+        val permissionState = PermissionState.PermissionGranted
         for (permission in permissions) {
             if (ContextCompat.checkSelfPermission(
-                    context,
-                    permission
+                    context, permission
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                return false
+                return PermissionState.PermissionDenied(Exception("Permission denied during check"))
             }
         }
-        return true
+        return permissionState
     }
 }
 
