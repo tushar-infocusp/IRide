@@ -30,6 +30,12 @@ class LocationViewModel(
     private val _currentLocation = MutableStateFlow<Position?>(null)
     val currentLocation = _currentLocation.asStateFlow()
 
+    private val _pickupAddress = MutableStateFlow<Place?>(null)
+    val pickupAddress = _pickupAddress.asStateFlow()
+
+    private val _dropoffAddress = MutableStateFlow<Place?>(null)
+    val dropoffAddress = _dropoffAddress.asStateFlow()
+
     private var searchJob: Job? = null
 
     fun fetchCurrentLocation() {
@@ -86,5 +92,13 @@ class LocationViewModel(
 
     fun clearSearchResults() {
         _searchResults.value = emptyList()
+    }
+
+    fun setPickupAddress(place: Place?) {
+        _pickupAddress.value = place
+    }
+
+    fun setDropoffAddress(place: Place?) {
+        _dropoffAddress.value = place
     }
 }

@@ -7,12 +7,12 @@ import com.example.iride.data.PolylineDecoder
 import com.example.iride.data.RouteInfo
 import com.example.iride.repository.api.LocationRepository
 import io.ktor.client.HttpClient
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.isSuccess
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.isSuccess
 
 class LocationRepositoryImpl(private val client: HttpClient) : LocationRepository {
 
@@ -34,7 +34,10 @@ class LocationRepositoryImpl(private val client: HttpClient) : LocationRepositor
                         displayName = data.displayName,
                         lat = data.lat.toDouble(),
                         lon = data.lon.toDouble(),
-                        address = data.address
+                        address = data.address?.copy(
+                            lat = data.lat.toDouble(),
+                            lon = data.lon.toDouble()
+                        )
                     )
                 )
             } else {
@@ -68,7 +71,10 @@ class LocationRepositoryImpl(private val client: HttpClient) : LocationRepositor
                             displayName = it.displayName,
                             lat = it.lat.toDouble(),
                             lon = it.lon.toDouble(),
-                            address = it.address
+                            address = it.address?.copy(
+                                lat = it.lat.toDouble(),
+                                lon = it.lon.toDouble()
+                            )
                         )
                     }
                 )

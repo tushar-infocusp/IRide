@@ -1,5 +1,3 @@
 package com.example.iride.location
 
-interface LocationRepository {
-    suspend fun getCurrentLocation(): LocationData?
-}
+expect suspend fun getCurrentLocation(): LocationData?

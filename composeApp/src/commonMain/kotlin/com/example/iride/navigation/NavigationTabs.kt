@@ -1,7 +1,8 @@
 package com.example.iride.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.iride.generated.resources.Res
@@ -44,7 +45,7 @@ object FindRideTab : Tab {
     override val options: TabOptions
         @Composable get() {
             return TabOptions(
-                index = 0u,
+                index = 1u,
                 title = "FIND",
                 icon = painterResource(Res.drawable.ic_find)
             )
@@ -56,15 +57,19 @@ object OfferRideTab : Tab {
     @Composable
     override fun Content() {
         val rideViewModel : RideViewModel = koinInject()
+        val navigator = LocalNavigator.currentOrThrow
+
         FindRideScreen(
             rideViewModel = rideViewModel
-        )
+        ){ searchType ->
+            navigator.push(Maps(searchType))
+        }
     }
 
     override val options: TabOptions
         @Composable get() {
             return TabOptions(
-                index = 0u,
+                index = 2u,
                 title = "OFFER",
                 icon = painterResource(Res.drawable.ic_offer_ride)
             )
@@ -81,7 +86,7 @@ object ImpactTab : Tab {
     override val options: TabOptions
         @Composable get() {
             return TabOptions(
-                index = 0u,
+                index = 3u,
                 title = "IMPACT",
                 icon = painterResource(Res.drawable.ic_leaf)
             )
@@ -98,7 +103,7 @@ object ProfileTab : Tab {
     override val options: TabOptions
         @Composable get() {
             return TabOptions(
-                index = 0u,
+                index = 4u,
                 title = "PROFILE",
                 icon = painterResource(Res.drawable.ic_profile)
             )

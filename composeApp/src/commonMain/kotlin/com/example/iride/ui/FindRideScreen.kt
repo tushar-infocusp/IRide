@@ -85,8 +85,10 @@ import com.example.iride.theme.primaryBackground
 import com.example.iride.theme.primaryBlack
 import com.example.iride.theme.strokeLightGreen
 import com.example.iride.ui.common.TopHeader
+import com.example.iride.viewmodel.LocationViewModel
 import com.example.iride.viewmodel.RideViewModel
 import kotlinx.coroutines.launch
+import com.example.iride.ui.SearchType
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -98,10 +100,14 @@ import org.koin.compose.koinInject
 
 @Composable
 fun FindRideScreen(
-    rideViewModel: RideViewModel
+    rideViewModel: RideViewModel,
+    locationViewModel: LocationViewModel = koinInject(),
+    openMaps : (SearchType) -> Unit
 ) {
 
     val scope = rememberCoroutineScope()
+    val pickupAddress by locationViewModel.pickupAddress.collectAsStateWithLifecycle()
+    val dropoffAddress by locationViewModel.dropoffAddress.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier
@@ -190,7 +196,7 @@ fun FindRideScreen(
                                         .fillMaxWidth()
                                         .height(50.dp)
                                         .clickable(true, onClick = {
-                                            // open the location search page with autocomplete or map
+                                            openMaps(SearchType.PICKUP)
                                         }),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -221,7 +227,7 @@ fun FindRideScreen(
                                     }
 
                                     Text(
-                                        "Downtown Tech District",
+                                        pickupAddress?.displayName ?: "Select Pickup Location",
                                         color = darkBlue,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.W300,
@@ -243,6 +249,7 @@ fun FindRideScreen(
                                         ).background(primaryBackground).fillMaxWidth()
                                         .wrapContentHeight()
                                         .clickable(true, onClick = {
+                                            openMaps(SearchType.DROPOFF)
                                         }),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -265,7 +272,7 @@ fun FindRideScreen(
                                     }
 
                                     Text(
-                                        text = "Downtown Tech District",
+                                        text = dropoffAddress?.displayName ?: "Select Destination",
                                         color = darkBlue,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.W300,
@@ -675,5 +682,7 @@ fun FindRidePreview() {
     val rideViewModel: RideViewModel = koinInject()
     FindRideScreen(
         rideViewModel = rideViewModel
-    )
+    ){
+
+    }
 }

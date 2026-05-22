@@ -17,7 +17,10 @@ data class Address(
     val state: String? = null,
     val country: String? = null,
     val suburb: String? = null,
-    val road: String? = null
+    val road: String? = null,
+    val postcode: String? = null,
+    val lat: Double? = null,
+    val lon: Double? = null
 )
 
 @Serializable

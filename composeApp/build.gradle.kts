@@ -51,8 +51,8 @@ kotlin {
             version = "10.29.0"
         }
 
-        pod("MapboxMaps") {
-            version = "~> 11.0"
+        pod("MapLibre") {
+            version = "~> 6.17"
         }
 
         framework {

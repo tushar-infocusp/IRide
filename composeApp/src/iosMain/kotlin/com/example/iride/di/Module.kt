@@ -4,8 +4,6 @@ import com.example.iride.data.FirebaseEmailAuthManager
 import com.example.iride.data.FirebaseOTPAuthManager
 import com.example.iride.data.OTPAuthManager
 import com.example.iride.data.SignInAuthManager
-import com.example.iride.location.LocationService
-import com.example.iride.viewmodel.RideViewModel
 import org.koin.dsl.module
 
 val iosModule = module {
@@ -17,12 +15,5 @@ val iosModule = module {
     single<SignInAuthManager> {
         FirebaseEmailAuthManager()
     }
-
-    single {
-        RideViewModel(
-            get(), get()
-        )
-    }
-
 
 }
