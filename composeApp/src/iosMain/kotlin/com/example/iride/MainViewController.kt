@@ -6,4 +6,5 @@ import com.example.iride.di.iosModule
 
 fun MainViewController() = ComposeUIViewController {
     initKoin(listOf(iosModule))
-    App() }
+    App()
+}
