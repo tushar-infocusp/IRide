@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import com.example.iride.data.AppContextHolder
+import com.example.iride.permission.PermissionHandler
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -49,4 +50,8 @@ actual suspend fun getCurrentLocation(): LocationData? =
                 }
             }
         }
-    }
+}
+
+actual fun provideLocationService(): LocationService {
+    return LocationService()
+}

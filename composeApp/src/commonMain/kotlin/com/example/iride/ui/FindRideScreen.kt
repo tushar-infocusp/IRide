@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -47,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -120,12 +121,18 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
+            val lastLocation = rideViewModel.lastLocation.collectAsState()
+            if (lastLocation.value!=null){
+                Text("Last location Latitude: "+lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
+            }
             var showDatePicker by remember { mutableStateOf(false) }
-            var departureDateTime by remember { mutableStateOf<LocalDateTime>(LocalDateTime.now()) }
+            var departureDateTime by remember { mutableStateOf(LocalDateTime.now()) }
+            var selectedSeatOption by remember { mutableStateOf(1) }
+
             val departureText by remember {
                 derivedStateOf {
                     departureDateTime.let {
-                        it.date.toString() + " " + it.time.toString()
+                        it.date.toString() + " " + it.time.hour.toString() + ":" + it.time.minute.toString()
                     }
                 }
             }
@@ -297,6 +304,7 @@ fun FindRideScreen(
                                                 departureText, color = darkBlue,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.W300,
+                                                maxLines = 1,
                                                 modifier = Modifier.padding(start = 8.dp)
                                                     .padding(vertical = 16.dp)
                                             )
@@ -304,6 +312,9 @@ fun FindRideScreen(
 
                                     }
                                     Column(modifier = Modifier.fillMaxWidth()) {
+                                        val options = listOf(1, 2, 3, 4)
+                                        var showSeatSelection by remember { mutableStateOf(false) }
+
                                         Text(
                                             "SEATS",
                                             fontSize = 12.sp,
@@ -323,6 +334,7 @@ fun FindRideScreen(
                                                 ).background(primaryBackground).fillMaxWidth()
                                                 .wrapContentHeight()
                                                 .clickable(true, onClick = {
+                                                    showSeatSelection = true
                                                 }),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
@@ -342,12 +354,43 @@ fun FindRideScreen(
                                             }
 
                                             Text(
-                                                "2 Seats", color = darkBlue,
+                                                if (selectedSeatOption <= 1) {
+                                                    "$selectedSeatOption Seat"
+                                                } else {
+                                                    "$selectedSeatOption Seats"
+                                                }, color = darkBlue,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.W300,
                                                 modifier = Modifier.padding(start = 8.dp)
                                                     .padding(vertical = 16.dp)
                                             )
+
+                                            DropdownMenu(
+                                                expanded = showSeatSelection,
+                                                onDismissRequest = {
+                                                    showSeatSelection = false
+                                                }
+                                            ) {
+                                                options.forEach { option ->
+                                                    DropdownMenuItem(
+                                                        text = {
+                                                            Text(
+                                                                if (option <= 1) {
+                                                                    "$option Seat"
+                                                                } else {
+                                                                    "$option Seats"
+                                                                }, color = darkBlue,
+                                                                fontSize = 12.sp,
+                                                                fontWeight = FontWeight.W300,
+                                                            )
+                                                        },
+                                                        onClick = {
+                                                            selectedSeatOption = option
+                                                            showSeatSelection = false
+                                                        }
+                                                    )
+                                                }
+                                            }
 
                                             Row(
                                                 horizontalArrangement = Arrangement.End,
@@ -446,7 +489,7 @@ fun FindRideScreen(
                                                 rideViewModel.publishRide(
                                                     origin = pickupAddress?.displayName ?: "",
                                                     destination = dropoffAddress?.displayName ?: "",
-                                                    seats = 4,
+                                                    seats = selectedSeatOption,
                                                     price = 150.0,
                                                     startDateTime = departureDateTime.toInstant(
                                                         TimeZone.currentSystemDefault()
