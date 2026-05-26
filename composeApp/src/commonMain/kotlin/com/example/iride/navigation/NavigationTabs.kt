@@ -21,7 +21,6 @@ object HomeTab : Tab {
 
     @Composable
     override fun Content() {
-        MapScreen()
     }
 
     override val options: TabOptions

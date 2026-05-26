@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.ic_end_point
+import com.example.iride.generated.resources.ic_location
 import com.example.iride.generated.resources.ic_start_point
 import com.example.iride.theme.deepGreen
 import com.example.iride.theme.emeraldGreen
@@ -134,6 +135,7 @@ fun MapScreen(
 
     val startIcon = image(painterResource(Res.drawable.ic_start_point))
     val endIcon = image(painterResource(Res.drawable.ic_end_point))
+    val currentIcon = image(painterResource(Res.drawable.ic_location))
 
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
@@ -235,13 +237,17 @@ fun MapScreen(
                 SymbolLayer(id = "dropoff-layer", source = source, iconImage = endIcon, iconSize = const(0.15f), iconAnchor = const(SymbolAnchor.Bottom))
             }
             
-            // 📍 Center Indicator
-            if (pickupPosition == null && dropoffPosition == null) {
-                 currentLocation?.let { loc ->
-                    val source = rememberGeoJsonSource(data = GeoJsonData.Features(FeatureCollection(listOf(Feature(Point(loc), JsonObject(emptyMap()))))))
-                    CircleLayer(id = "center-halo", source = source, color = const(Color(0x404285F4)), radius = const(15.dp))
-                    CircleLayer(id = "center-dot", source = source, color = const(Color(0xFF4285F4)), radius = const(8.dp), strokeColor = const(Color.White), strokeWidth = const(2.dp))
-                }
+            // 📍 Current Location Indicator
+            currentLocation?.let { loc ->
+                val source = rememberGeoJsonSource(data = GeoJsonData.Features(FeatureCollection(listOf(Feature(Point(loc), JsonObject(emptyMap()))))))
+                CircleLayer(id = "center-halo", source = source, color = const(Color(0x404285F4)), radius = const(15.dp))
+                SymbolLayer(
+                    id = "current-location-layer",
+                    source = source,
+                    iconImage = currentIcon,
+                    iconSize = const(0.1f),
+                    iconAnchor = const(SymbolAnchor.Bottom)
+                )
             }
         }
 
@@ -408,9 +414,17 @@ fun MapScreen(
                     Button(
                         onClick = { 
                             if (activeSearch == SearchType.PICKUP) {
-                                activeSearch = SearchType.DROPOFF
+                                if (persistedDropoff == null) {
+                                    activeSearch = SearchType.DROPOFF
+                                } else {
+                                    onBack?.invoke()
+                                }
                             } else {
-                                onBack?.invoke()
+                                if (persistedPickup == null) {
+                                    activeSearch = SearchType.PICKUP
+                                } else {
+                                    onBack?.invoke()
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -418,7 +432,11 @@ fun MapScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = deepGreen)
                     ) {
                         Text(
-                            if (activeSearch == SearchType.PICKUP) "Confirm Pickup" else "Confirm Destination",
+                            if (activeSearch == SearchType.PICKUP) {
+                                if (persistedDropoff == null) "Confirm Pickup" else "Confirm & Return"
+                            } else {
+                                if (persistedPickup == null) "Confirm Destination" else "Confirm & Return"
+                            },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White

@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +51,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -106,8 +108,8 @@ fun FindRideScreen(
 ) {
 
     val scope = rememberCoroutineScope()
-    val pickupAddress by locationViewModel.pickupAddress.collectAsStateWithLifecycle()
-    val dropoffAddress by locationViewModel.dropoffAddress.collectAsStateWithLifecycle()
+    val pickupAddress by locationViewModel.pickupAddress.collectAsState()
+    val dropoffAddress by locationViewModel.dropoffAddress.collectAsState()
 
     Scaffold(
         modifier = Modifier
@@ -185,100 +187,68 @@ fun FindRideScreen(
                                 Row(
                                     modifier = Modifier
                                         .padding(horizontal = 16.dp)
-                                        .padding(top = 8.dp, bottom = 8.dp)
-                                        .clip(
-                                            RoundedCornerShape(8.dp)
-                                        ).border(
+                                        .padding(top = 8.dp, bottom = 4.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(
                                             width = 1.dp,
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
-                                        ).background(primaryBackground)
+                                        )
+                                        .background(primaryBackground)
                                         .fillMaxWidth()
                                         .height(50.dp)
-                                        .clickable(true, onClick = {
-                                            openMaps(SearchType.PICKUP)
-                                        }),
+                                        .clickable { openMaps(SearchType.PICKUP) },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 8.dp)
-                                            .height(50.dp),
-                                        verticalArrangement = Arrangement.Top,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.ic_location),
-                                            contentDescription = null,
-                                            tint = darkBlue,
-                                            modifier = Modifier
-                                                .width(10.dp)
-                                                .height(12.dp)
-                                        )
-                                        Spacer(
-                                            modifier = Modifier
-                                                .padding(top = 4.dp)
-                                                .width(1.dp)
-                                                .background(greyLight)
-                                                .height(16.dp)
-                                        )
-
-                                    }
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.ic_location),
+                                        contentDescription = null,
+                                        tint = darkBlue,
+                                        modifier = Modifier.padding(start = 12.dp).size(16.dp)
+                                    )
 
                                     Text(
-                                        pickupAddress?.displayName ?: "Select Pickup Location",
+                                        text = pickupAddress?.displayName ?: "Select Pickup Location",
                                         color = darkBlue,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.W300,
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(horizontal = 12.dp).weight(1f)
                                     )
                                 }
 
-
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                        .padding(bottom = 8.dp)
-                                        .clip(
-                                            RoundedCornerShape(8.dp)
-                                        ).border(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .padding(top = 4.dp, bottom = 8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(
                                             width = 1.dp,
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
-                                        ).background(primaryBackground).fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .clickable(true, onClick = {
-                                            openMaps(SearchType.DROPOFF)
-                                        }),
+                                        )
+                                        .background(primaryBackground)
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .clickable { openMaps(SearchType.DROPOFF) },
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 8.dp)
-                                            .fillMaxHeight(),
-                                        verticalArrangement = Arrangement.Top,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Icon(
-                                            imageVector = vectorResource(Res.drawable.ic_flag),
-                                            contentDescription = null,
-                                            tint = emeraldGreen,
-                                            modifier = Modifier
-                                                .width(9.dp)
-                                                .height(10.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = vectorResource(Res.drawable.ic_flag),
+                                        contentDescription = null,
+                                        tint = emeraldGreen,
+                                        modifier = Modifier.padding(start = 12.dp).size(16.dp)
+                                    )
 
                                     Text(
                                         text = dropoffAddress?.displayName ?: "Select Destination",
                                         color = darkBlue,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.W300,
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 16.dp)
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(horizontal = 12.dp).weight(1f)
                                     )
                                 }
 
@@ -474,8 +444,8 @@ fun FindRideScreen(
                                         .clickable {
                                             scope.launch {
                                                 rideViewModel.publishRide(
-                                                    origin = "Meerut",
-                                                    destination = "Delhi",
+                                                    origin = pickupAddress?.displayName ?: "",
+                                                    destination = dropoffAddress?.displayName ?: "",
                                                     seats = 4,
                                                     price = 150.0,
                                                     startDateTime = departureDateTime.toInstant(

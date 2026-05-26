@@ -37,6 +37,6 @@ val appModule = module {
     single<LocationRepository> { LocationRepositoryImpl(get()) }
     single<LocationService> { LocationService() }
 
-    factory { RideViewModel(get()) }
-    factory { LocationViewModel(get(), get()) }
+    single { RideViewModel(get()) }
+    single { LocationViewModel(get(), get()) }
 }
