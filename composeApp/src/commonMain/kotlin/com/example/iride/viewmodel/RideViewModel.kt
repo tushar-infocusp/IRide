@@ -2,20 +2,34 @@ package com.example.iride.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.iride.data.local.RideDao
+import com.example.iride.data.local.RideEntity
 import com.example.iride.location.LocationData
 import com.example.iride.location.LocationRepository
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class RideViewModel(
-    val rideRepository: RideRepository, val locationRepository: LocationRepository
+    val rideRepository: RideRepository,
+    val locationRepository: LocationRepository,
+    val rideDao: RideDao
 ) : ViewModel() {
 
     private val _rideId = MutableStateFlow("")
     val rideId: StateFlow<String> = _rideId.asStateFlow()
+
+    val allRides: StateFlow<List<RideEntity>> = rideDao.getAllRides()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
 
     // Consume this location to get the last device location
@@ -33,6 +47,19 @@ class RideViewModel(
     ) {
 
         try {
+
+            rideDao.insertRide(
+                RideEntity(
+                    rideId = Random.nextInt().toString(),
+                    origin = origin,
+                    destination = destination,
+                    seats = seats,
+                    price = price,
+                    startDateTime = startDateTime,
+                    endDateTime = endDateTime
+                )
+            )
+
             val result = rideRepository.publishRide(
                 origin = origin,
                 destination = destination,
@@ -44,7 +71,10 @@ class RideViewModel(
 
 
             if (result.isSuccess) {
-                _rideId.emit(result.getOrThrow().rideId)
+                val rideResponse = result.getOrThrow()
+                _rideId.emit(rideResponse.rideId)
+                // Create local entry in Room
+
             } else {
                 throw Exception(result.exceptionOrNull()?.message)
             }
