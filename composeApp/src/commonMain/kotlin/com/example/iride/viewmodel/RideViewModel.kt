@@ -2,6 +2,8 @@ package com.example.iride.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.iride.connectivity.ConnectivityMonitor
+import com.example.iride.connectivity.ConnectivityStatus
 import com.example.iride.location.LocationData
 import com.example.iride.location.LocationRepository
 import com.example.iride.permission.Permission
@@ -9,17 +11,27 @@ import com.example.iride.permission.PermissionHandler
 import com.example.iride.permission.PermissionState
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RideViewModel(
     val rideRepository: RideRepository, val locationRepository: LocationRepository,
-    val permissionManager: PermissionHandler
+    val permissionManager: PermissionHandler,
+    val connectivityMonitor: ConnectivityMonitor
 ) : ViewModel() {
 
     private val _rideId = MutableStateFlow("")
     val rideId: StateFlow<String> = _rideId.asStateFlow()
+
+    val connectivityStatus: StateFlow<ConnectivityStatus> = connectivityMonitor.status
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ConnectivityStatus.Unavailable
+        )
 
 
     // Consume this location to get the last device location
