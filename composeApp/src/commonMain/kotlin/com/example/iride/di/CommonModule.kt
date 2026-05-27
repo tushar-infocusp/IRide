@@ -2,7 +2,6 @@ package com.example.iride.di
 
 import com.example.iride.client.ApiClient
 import com.example.iride.connectivity.ConnectivityMonitor
-import com.example.iride.connectivity.ConnectivityMonitorFactory
 import com.example.iride.connectivity.provideConnectivityFactory
 import com.example.iride.location.LocationRepository
 import com.example.iride.location.LocationRepositoryImpl

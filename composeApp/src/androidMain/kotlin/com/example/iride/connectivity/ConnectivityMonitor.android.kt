@@ -20,8 +20,6 @@ class AndroidConnectivityMonitor : ConnectivityMonitor {
 
     var scope = CoroutineScope(Dispatchers.Main)
 
-
-
     var callback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             update()
@@ -74,12 +72,6 @@ class AndroidConnectivityMonitor : ConnectivityMonitor {
                 ConnectivityStatus.Offline
             }
         }
-    }
-}
-
-actual class ConnectivityMonitorFactory {
-    actual fun create(): ConnectivityMonitor {
-        return AndroidConnectivityMonitor()
     }
 }
 
