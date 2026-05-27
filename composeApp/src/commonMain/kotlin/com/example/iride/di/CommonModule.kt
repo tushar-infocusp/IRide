@@ -42,5 +42,5 @@ val appModule = module {
     }
     // ⚠️ CRITICAL FIX: ViewModels/ScreenModels MUST be a factory.
     // If you use 'single', the state will never reset when you leave and return to the screen.
-    factory { RideViewModel(get(),get() )}
+    factory { RideViewModel(get(), get(), get()) }
 }

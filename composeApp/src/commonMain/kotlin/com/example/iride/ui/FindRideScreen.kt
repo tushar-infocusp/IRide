@@ -100,6 +100,7 @@ fun FindRideScreen(
 ) {
 
     val scope = rememberCoroutineScope()
+    val allRides by rideViewModel.allRides.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier
@@ -159,6 +160,14 @@ fun FindRideScreen(
                             color = mutedGreen,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.W400,
+                        )
+
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = "Total local rides: ${allRides.size}",
+                            color = deepGreen,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W600
                         )
 
                         Card(

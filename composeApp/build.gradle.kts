@@ -8,6 +8,12 @@ plugins {
     id("com.google.gms.google-services")
     kotlin("plugin.serialization") version "1.9.20"
     alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 compose.resources {
@@ -91,7 +97,8 @@ kotlin {
 
             implementation("network.chaintech:kmp-date-time-picker:1.1.1")
 
-
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
         }
 
         iosMain.dependencies {
@@ -133,5 +140,9 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+    add("kspCommonMainMetadata", libs.androidx.room.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }
 
