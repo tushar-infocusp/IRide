@@ -33,6 +33,9 @@ actual class ConnectivityMonitorFactory {
         private var selfRef: StableRef<IosConnectivityMonitor>? = null
         private val scope = CoroutineScope(Dispatchers.Main)
 
+        init {
+            start()
+        }
 
         @OptIn(ExperimentalForeignApi::class)
         override fun start() {
@@ -131,4 +134,8 @@ actual class ConnectivityMonitorFactory {
     actual fun create(): ConnectivityMonitor {
         return IosConnectivityMonitor()
     }
+}
+
+actual fun provideConnectivityFactory(): ConnectivityMonitor{
+    return ConnectivityMonitorFactory.IosConnectivityMonitor()
 }

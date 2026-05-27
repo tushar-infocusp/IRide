@@ -1,6 +1,9 @@
 package com.example.iride.di
 
 import com.example.iride.client.ApiClient
+import com.example.iride.connectivity.ConnectivityMonitor
+import com.example.iride.connectivity.ConnectivityMonitorFactory
+import com.example.iride.connectivity.provideConnectivityFactory
 import com.example.iride.location.LocationRepository
 import com.example.iride.location.LocationRepositoryImpl
 import com.example.iride.location.provideLocationService
@@ -36,6 +39,9 @@ val clientModule = module {
 val appModule = module {
     single<RideRepository> { RideRepositoryImpl(get()) }
 
+    single<ConnectivityMonitor> { provideConnectivityFactory() }
+
+
     single<PermissionHandler> {
         providePermissionHandler()
     }
@@ -46,5 +52,5 @@ val appModule = module {
     }
     // ⚠️ CRITICAL FIX: ViewModels/ScreenModels MUST be a factory.
     // If you use 'single', the state will never reset when you leave and return to the screen.
-    factory { RideViewModel(get(),get(), get() )}
+    factory { RideViewModel(get(), get(), get(), get()) }
 }

@@ -6,14 +6,21 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.example.iride.data.AppContextHolder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class AndroidConnectivityMonitor : ConnectivityMonitor {
     lateinit var cm: ConnectivityManager
     private val _status = MutableStateFlow(ConnectivityStatus.Unavailable)
     override val status: StateFlow<ConnectivityStatus>
         get() = _status
+
+    var scope = CoroutineScope(Dispatchers.Main)
+
+
 
     var callback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -32,7 +39,9 @@ class AndroidConnectivityMonitor : ConnectivityMonitor {
         }
 
     }
-
+    init {
+        start()
+    }
 
     override fun start() {
         if (!::cm.isInitialized) {
@@ -58,10 +67,12 @@ class AndroidConnectivityMonitor : ConnectivityMonitor {
         val online =
             caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
                     caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        _status.value = if (online) {
-            ConnectivityStatus.Online
-        } else {
-            ConnectivityStatus.Offline
+        scope.launch {
+            _status.value = if (online) {
+                ConnectivityStatus.Online
+            } else {
+                ConnectivityStatus.Offline
+            }
         }
     }
 }
@@ -70,4 +81,8 @@ actual class ConnectivityMonitorFactory {
     actual fun create(): ConnectivityMonitor {
         return AndroidConnectivityMonitor()
     }
+}
+
+actual fun provideConnectivityFactory(): ConnectivityMonitor {
+    return AndroidConnectivityMonitor()
 }
