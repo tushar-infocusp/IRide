@@ -51,7 +51,3 @@ actual suspend fun getCurrentLocation(): LocationData? =
             }
         }
 }
-
-actual fun provideLocationService(): LocationService {
-    return LocationService()
-}

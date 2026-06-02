@@ -9,19 +9,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
-import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
-import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -49,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -57,13 +54,13 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.iride.data.showToast
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
 import com.example.iride.generated.resources.estimated_carbon_saving
-import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
+import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_location
 import com.example.iride.generated.resources.ic_notification
 import com.example.iride.generated.resources.ic_publish_ride_map
@@ -71,11 +68,10 @@ import com.example.iride.generated.resources.ic_right_arrow
 import com.example.iride.generated.resources.ic_seat
 import com.example.iride.generated.resources.ic_time
 import com.example.iride.generated.resources.ic_user_profile
+import com.example.iride.generated.resources.offer_ride_departure_time_title
 import com.example.iride.generated.resources.offer_ride_sub_title
 import com.example.iride.generated.resources.offer_ride_title
 import com.example.iride.generated.resources.publish_ride
-import com.example.iride.generated.resources.offer_ride_departure_time_title
-
 import com.example.iride.generated.resources.route_details
 import com.example.iride.theme.darkBlue
 import com.example.iride.theme.deepGreen
@@ -91,10 +87,12 @@ import com.example.iride.ui.common.TopHeader
 import com.example.iride.viewmodel.LocationViewModel
 import com.example.iride.viewmodel.RideViewModel
 import kotlinx.coroutines.launch
-import com.example.iride.ui.SearchType
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import network.chaintech.kmp_date_time_picker.utils.now
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -111,6 +109,7 @@ fun FindRideScreen(
     val scope = rememberCoroutineScope()
     val pickupAddress by locationViewModel.pickupAddress.collectAsState()
     val dropoffAddress by locationViewModel.dropoffAddress.collectAsState()
+    var publishingRide by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -121,10 +120,6 @@ fun FindRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
-            val lastLocation = rideViewModel.lastLocation.collectAsState()
-            if (lastLocation.value!=null){
-                Text("Last location Latitude: "+lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
-            }
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf(LocalDateTime.now()) }
             var selectedSeatOption by remember { mutableStateOf(1) }
@@ -484,9 +479,11 @@ fun FindRideScreen(
                                         .clip(RoundedCornerShape(12.dp))
                                         .fillMaxWidth()
                                         .background(deepGreen)
-                                        .clickable {
+                                        .height(56.dp)
+                                        .clickable(!publishingRide) {
                                             scope.launch {
-                                                rideViewModel.publishRide(
+                                                publishingRide = true
+                                                val result = rideViewModel.publishRide(
                                                     origin = pickupAddress?.displayName ?: "",
                                                     destination = dropoffAddress?.displayName ?: "",
                                                     seats = selectedSeatOption,
@@ -498,18 +495,33 @@ fun FindRideScreen(
                                                         TimeZone.currentSystemDefault()
                                                     ).epochSeconds
                                                 )
+                                                if(result){
+                                                    showToast("Ride Published successfully")
+                                                }
+                                                else{
+                                                    showToast("Failed to publish ride")
+                                                }
+                                                publishingRide = false
                                             }
                                         },
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center
                                 ) {
-                                    Text(
-                                        text = stringResource(Res.string.publish_ride),
-                                        color = Color.White,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.W600,
-                                        modifier = Modifier.padding(vertical = 16.dp),
-                                    )
+                                    if(!publishingRide){
+                                        Text(
+                                            text = stringResource(Res.string.publish_ride),
+                                            color = Color.White,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.W600,
+                                        )
+                                    }
+                                    else{
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
                                 }
                             }
                         }

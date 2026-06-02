@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iride.location.LocationData
 import com.example.iride.location.getCurrentLocation
-import com.example.iride.repository.api.LocationRepository
-import com.example.iride.location.LocationRepository
 import com.example.iride.permission.Permission
 import com.example.iride.permission.PermissionHandler
 import com.example.iride.permission.PermissionState
@@ -16,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class RideViewModel(
-    val rideRepository: RideRepository, val locationRepository: LocationRepository,
+    val rideRepository: RideRepository,
     val permissionManager: PermissionHandler
 ) : ViewModel() {
 
@@ -36,9 +34,9 @@ class RideViewModel(
         price: Double,
         startDateTime: Long,
         endDateTime: Long
-    ) {
+    ) : Boolean {
 
-        try {
+        return try {
             val result = rideRepository.publishRide(
                 origin = origin,
                 destination = destination,
@@ -54,9 +52,11 @@ class RideViewModel(
             } else {
                 throw Exception(result.exceptionOrNull()?.message)
             }
+            true
 
         } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 
@@ -65,7 +65,7 @@ class RideViewModel(
         viewModelScope.launch {
             val permissionState = permissionManager.checkPermission(arrayOf(Permission.LOCATION))
             if (permissionState is PermissionState.PermissionGranted && permissionManager.enableGps()) {
-                val location = locationRepository.getCurrentLocation()
+                val location = getCurrentLocation()
                 location?.let {
                     _lastLocation.value = it
                 }
