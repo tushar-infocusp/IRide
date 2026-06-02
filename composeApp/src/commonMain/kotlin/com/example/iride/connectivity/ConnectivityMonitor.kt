@@ -1,5 +1,6 @@
 package com.example.iride.connectivity
 
+import com.example.iride.location.LocationService
 import kotlinx.coroutines.flow.StateFlow
 
 /** Simple cross-platform status */
@@ -12,7 +13,5 @@ interface ConnectivityMonitor {
     fun stop()
 }
 
-/** expect a factory provided by each platform */
-expect class ConnectivityMonitorFactory {
-    fun create(): ConnectivityMonitor
-}
+
+expect fun provideConnectivityFactory(): ConnectivityMonitor

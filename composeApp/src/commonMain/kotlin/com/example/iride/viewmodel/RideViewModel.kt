@@ -4,8 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.iride.data.local.RideDao
 import com.example.iride.data.local.RideEntity
+import com.example.iride.connectivity.ConnectivityMonitor
+import com.example.iride.connectivity.ConnectivityStatus
 import com.example.iride.location.LocationData
 import com.example.iride.location.LocationRepository
+import com.example.iride.permission.Permission
+import com.example.iride.permission.PermissionHandler
+import com.example.iride.permission.PermissionState
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +23,9 @@ import kotlin.random.Random
 class RideViewModel(
     val rideRepository: RideRepository,
     val locationRepository: LocationRepository,
+    val connectivityMonitor: ConnectivityMonitor,
+    val permissionManager: PermissionHandler,
+
     val rideDao: RideDao
 ) : ViewModel() {
 
@@ -29,6 +37,13 @@ class RideViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+
+    val connectivityStatus: StateFlow<ConnectivityStatus> = connectivityMonitor.status
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ConnectivityStatus.Unavailable
         )
 
 
@@ -87,9 +102,15 @@ class RideViewModel(
     // Function to fetch location once permission is granted.
     fun fetchLocation() {
         viewModelScope.launch {
-            val location = locationRepository.getCurrentLocation()
-            location?.let {
-                _lastLocation.value = it
+            val permissionState = permissionManager.checkPermission(arrayOf(Permission.LOCATION))
+            if (permissionState is PermissionState.PermissionGranted && permissionManager.enableGps()) {
+                val location = locationRepository.getCurrentLocation()
+                location?.let {
+                    _lastLocation.value = it
+                }
+            }else if (permissionState is PermissionState.PermissionDeniedPermanently){
+                //need to open settings to show the permissions
+                // TODO make changes to open settings
             }
         }
     }

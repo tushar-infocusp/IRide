@@ -25,11 +25,11 @@ val iosModule = module {
         FirebaseEmailAuthManager()
     }
 
-    single {
-        RideViewModel(
-            get(), get(), get()
-        )
-    }
+//    single {
+//        RideViewModel(
+//            get(), get(), providePermissionManager()
+//        )
+//    }
 
 
 }

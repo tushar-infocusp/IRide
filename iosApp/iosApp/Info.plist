@@ -9,6 +9,9 @@
         <key>NSLocationWhenInUseUsageDescription</key>
         <string>Location is required to fetch nearby places.</string>
 
+        <key>NSCameraUsageDescription</key>
+        <string>Camera is required</string>
+
         <key>FirebaseAppDelegateProxyEnabled</key>
         <true/>
 
