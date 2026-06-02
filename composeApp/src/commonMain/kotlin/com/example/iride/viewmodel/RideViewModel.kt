@@ -2,6 +2,8 @@ package com.example.iride.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.iride.data.local.RideDao
+import com.example.iride.data.local.RideEntity
 import com.example.iride.connectivity.ConnectivityMonitor
 import com.example.iride.connectivity.ConnectivityStatus
 import com.example.iride.location.LocationData
@@ -16,15 +18,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class RideViewModel(
-    val rideRepository: RideRepository, val locationRepository: LocationRepository,
+    val rideRepository: RideRepository,
+    val locationRepository: LocationRepository,
+    val connectivityMonitor: ConnectivityMonitor,
     val permissionManager: PermissionHandler,
-    val connectivityMonitor: ConnectivityMonitor
+    val rideDao: RideDao
 ) : ViewModel() {
 
     private val _rideId = MutableStateFlow("")
     val rideId: StateFlow<String> = _rideId.asStateFlow()
+
+    val allRides: StateFlow<List<RideEntity>> = rideDao.getAllRides()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     val connectivityStatus: StateFlow<ConnectivityStatus> = connectivityMonitor.status
         .stateIn(
@@ -58,9 +70,20 @@ class RideViewModel(
                 endDateTime = endDateTime
             )
 
-
             if (result.isSuccess) {
-                _rideId.emit(result.getOrThrow().rideId)
+                val rideResponse = result.getOrThrow()
+                _rideId.emit(rideResponse.rideId)
+                rideDao.insertRide(
+                    RideEntity(
+                        rideId = Random.nextInt().toString(),
+                        origin = origin,
+                        destination = destination,
+                        seats = seats,
+                        price = price,
+                        startDateTime = startDateTime,
+                        endDateTime = endDateTime
+                    )
+                )
             } else {
                 throw Exception(result.exceptionOrNull()?.message)
             }
@@ -79,7 +102,7 @@ class RideViewModel(
                 location?.let {
                     _lastLocation.value = it
                 }
-            }else if (permissionState is PermissionState.PermissionDeniedPermanently){
+            } else if (permissionState is PermissionState.PermissionDeniedPermanently) {
                 //need to open settings to show the permissions
                 // TODO make changes to open settings
             }
