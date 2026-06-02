@@ -96,7 +96,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 
 @Composable
-fun FindRideScreen(
+fun PublishRideScreen(
     rideViewModel: RideViewModel
 ) {
 
@@ -113,8 +113,8 @@ fun FindRideScreen(
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
             val lastLocation = rideViewModel.lastLocation.collectAsState()
-            if (lastLocation.value!=null){
-                Text("Last location Latitude: "+lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
+            if (lastLocation.value != null) {
+                Text("Last location Latitude: " + lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
             }
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf(LocalDateTime.now()) }
@@ -409,7 +409,8 @@ fun FindRideScreen(
                                                                     "$option Seat"
                                                                 } else {
                                                                     "$option Seats"
-                                                                }, color = darkBlue,
+                                                                },
+                                                                color = darkBlue,
                                                                 fontSize = 12.sp,
                                                                 fontWeight = FontWeight.W300,
                                                             )
@@ -673,9 +674,9 @@ fun WheelDatePickerBottomSheet(title: String, dateOfBirth: (LocalDateTime?) -> U
 
 @Preview(device = PIXEL_9)
 @Composable
-fun FindRidePreview() {
+fun PublishRidePreview() {
     val rideViewModel: RideViewModel = koinInject()
-    FindRideScreen(
+    PublishRideScreen(
         rideViewModel = rideViewModel
     )
 }

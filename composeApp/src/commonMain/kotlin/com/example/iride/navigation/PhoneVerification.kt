@@ -4,11 +4,7 @@ import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.example.iride.data.OTPAuthManager
-import com.example.iride.data.Platform
 import com.example.iride.ui.PhoneVerificationScreen
-import com.example.iride.ui.SignInScreen
-import org.koin.compose.koinInject
 
 class PhoneVerification : Screen {
 
@@ -18,7 +14,7 @@ class PhoneVerification : Screen {
 
         PhoneVerificationScreen(
             onVerificationSuccess = {
-                navigator.push(FindRide())
+                navigator.push(PublishRide())
             },
             onBackClick = {
                 navigator.pop()

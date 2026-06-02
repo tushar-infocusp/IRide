@@ -25,7 +25,6 @@ class RideViewModel(
     val locationRepository: LocationRepository,
     val connectivityMonitor: ConnectivityMonitor,
     val permissionManager: PermissionHandler,
-
     val rideDao: RideDao
 ) : ViewModel() {
 
@@ -62,19 +61,6 @@ class RideViewModel(
     ) {
 
         try {
-
-            rideDao.insertRide(
-                RideEntity(
-                    rideId = Random.nextInt().toString(),
-                    origin = origin,
-                    destination = destination,
-                    seats = seats,
-                    price = price,
-                    startDateTime = startDateTime,
-                    endDateTime = endDateTime
-                )
-            )
-
             val result = rideRepository.publishRide(
                 origin = origin,
                 destination = destination,
@@ -84,12 +70,20 @@ class RideViewModel(
                 endDateTime = endDateTime
             )
 
-
             if (result.isSuccess) {
                 val rideResponse = result.getOrThrow()
                 _rideId.emit(rideResponse.rideId)
-                // Create local entry in Room
-
+                rideDao.insertRide(
+                    RideEntity(
+                        rideId = Random.nextInt().toString(),
+                        origin = origin,
+                        destination = destination,
+                        seats = seats,
+                        price = price,
+                        startDateTime = startDateTime,
+                        endDateTime = endDateTime
+                    )
+                )
             } else {
                 throw Exception(result.exceptionOrNull()?.message)
             }
@@ -108,7 +102,7 @@ class RideViewModel(
                 location?.let {
                     _lastLocation.value = it
                 }
-            }else if (permissionState is PermissionState.PermissionDeniedPermanently){
+            } else if (permissionState is PermissionState.PermissionDeniedPermanently) {
                 //need to open settings to show the permissions
                 // TODO make changes to open settings
             }
