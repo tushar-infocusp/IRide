@@ -110,6 +110,7 @@ fun FindRideScreen(
     val pickupAddress by locationViewModel.pickupAddress.collectAsState()
     val dropoffAddress by locationViewModel.dropoffAddress.collectAsState()
     var publishingRide by remember { mutableStateOf(false) }
+    val allRides by rideViewModel.allRides.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier
@@ -169,6 +170,14 @@ fun FindRideScreen(
                             color = mutedGreen,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.W400,
+                        )
+
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = "Total local rides: ${allRides.size}",
+                            color = deepGreen,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W600
                         )
 
                         Card(
@@ -374,7 +383,8 @@ fun FindRideScreen(
                                                                     "$option Seat"
                                                                 } else {
                                                                     "$option Seats"
-                                                                }, color = darkBlue,
+                                                                },
+                                                                color = darkBlue,
                                                                 fontSize = 12.sp,
                                                                 fontWeight = FontWeight.W300,
                                                             )
@@ -703,9 +713,9 @@ fun WheelDatePickerBottomSheet(title: String, dateOfBirth: (LocalDateTime?) -> U
 
 @Preview(device = PIXEL_9)
 @Composable
-fun FindRidePreview() {
+fun PublishRidePreview() {
     val rideViewModel: RideViewModel = koinInject()
-    FindRideScreen(
+    PublishRideScreen(
         rideViewModel = rideViewModel
     ){
 
