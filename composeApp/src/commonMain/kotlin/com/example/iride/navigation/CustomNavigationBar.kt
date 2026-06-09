@@ -60,7 +60,8 @@ fun CustomBottomBar() {
                     .clip(RoundedCornerShape(16.dp))
                     .clickable { tabNavigator.current = tab }
                     .background(if(isSelected) paleGreen else Color.White)
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .weight(1f)
             ) {
 
                 Icon(
@@ -78,7 +79,7 @@ fun CustomBottomBar() {
                     text = tab.options.title,
                     color = if (isSelected) emeraldGreen else Color(0xFF94A3B8),
                     fontWeight = FontWeight.W600,
-                    fontSize = 11.sp
+                    fontSize = 10.sp
                 )
             }
         }

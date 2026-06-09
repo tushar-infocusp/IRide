@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
@@ -124,11 +125,11 @@ fun MapScreen(
     val persistedPickup by locationViewModel.pickupAddress.collectAsState()
     val persistedDropoff by locationViewModel.dropoffAddress.collectAsState()
 
-    var pickupPosition by remember { mutableStateOf<Position?>(persistedPickup?.let { Position(it.lon, it.lat) }) }
-    var dropoffPosition by remember { mutableStateOf<Position?>(persistedDropoff?.let { Position(it.lon, it.lat) }) }
+    var pickupPosition by remember(persistedPickup) { mutableStateOf<Position?>(persistedPickup?.let { Position(it.lon, it.lat) }) }
+    var dropoffPosition by remember(persistedDropoff) { mutableStateOf<Position?>(persistedDropoff?.let { Position(it.lon, it.lat) }) }
 
-    var pickupQuery by remember { mutableStateOf(persistedPickup?.displayName ?: "") }
-    var dropoffQuery by remember { mutableStateOf(persistedDropoff?.displayName ?: "") }
+    var pickupQuery by remember(persistedPickup) { mutableStateOf(persistedPickup?.displayName ?: "") }
+    var dropoffQuery by remember(persistedDropoff) { mutableStateOf(persistedDropoff?.displayName ?: "") }
     
     var activeSearch by remember { mutableStateOf(initialSearchType) }
     var lastReverseGeocodeTarget by remember { mutableStateOf<SearchType?>(null) }
@@ -152,9 +153,7 @@ fun MapScreen(
         currentLocation?.let {
             if (pickupPosition == null && persistedPickup == null) {
                 cameraState.position = CameraPosition(target = it, zoom = 14.0)
-                pickupPosition = it
-                lastReverseGeocodeTarget = SearchType.PICKUP
-                locationViewModel.reverseGeocode(it.latitude, it.longitude)
+                // Removed auto-setting pickupPosition and reverseGeocode
             }
         }
     }
@@ -261,7 +260,10 @@ fun MapScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { onBack?.invoke() }) {
+                    IconButton(onClick = { 
+                        locationViewModel.clearSearchResults()
+                        onBack?.invoke() 
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = deepGreen)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -287,14 +289,20 @@ fun MapScreen(
                         icon = Icons.Default.MyLocation,
                         isSelected = isPickup,
                         modifier = Modifier.weight(1f)
-                    ) { activeSearch = SearchType.PICKUP }
+                    ) { 
+                        activeSearch = SearchType.PICKUP 
+                        locationViewModel.clearSearchResults()
+                    }
                     
                     ToggleItem(
                         text = "Destination",
                         icon = Icons.Default.Navigation,
                         isSelected = !isPickup,
                         modifier = Modifier.weight(1f)
-                    ) { activeSearch = SearchType.DROPOFF }
+                    ) { 
+                        activeSearch = SearchType.DROPOFF 
+                        locationViewModel.clearSearchResults()
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -318,6 +326,23 @@ fun MapScreen(
                         },
                         placeholder = { Text("Search for a location...", color = Color.Gray) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                        trailingIcon = {
+                            val currentQuery = if (activeSearch == SearchType.PICKUP) pickupQuery else dropoffQuery
+                            if (currentQuery.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    if (activeSearch == SearchType.PICKUP) {
+                                        pickupQuery = ""
+                                        locationViewModel.setPickupAddress(null)
+                                    } else {
+                                        dropoffQuery = ""
+                                        locationViewModel.setDropoffAddress(null)
+                                    }
+                                    locationViewModel.clearSearchResults()
+                                }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.Gray)
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,

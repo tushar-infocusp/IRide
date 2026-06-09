@@ -31,6 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.iride.data.showToast
 import com.example.iride.generated.resources.Res
 import com.example.iride.generated.resources.app_name
@@ -100,7 +103,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 
 @Composable
-fun FindRideScreen(
+fun PublishRideScreen(
     rideViewModel: RideViewModel,
     locationViewModel: LocationViewModel = koinInject(),
     openMaps : (SearchType) -> Unit
@@ -109,6 +112,17 @@ fun FindRideScreen(
     val scope = rememberCoroutineScope()
     val pickupAddress by locationViewModel.pickupAddress.collectAsState()
     val dropoffAddress by locationViewModel.dropoffAddress.collectAsState()
+    var pickupText by remember { mutableStateOf("") }
+    var dropoffText by remember { mutableStateOf("") }
+
+    LaunchedEffect(pickupAddress) {
+        pickupText = pickupAddress?.displayName ?: ""
+    }
+
+    LaunchedEffect(dropoffAddress?.displayName) {
+        dropoffText = dropoffAddress?.displayName ?: ""
+    }
+
     var publishingRide by remember { mutableStateOf(false) }
     val allRides by rideViewModel.allRides.collectAsStateWithLifecycle()
 
@@ -172,14 +186,6 @@ fun FindRideScreen(
                             fontWeight = FontWeight.W400,
                         )
 
-                        Text(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            text = "Total local rides: ${allRides.size}",
-                            color = deepGreen,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W600
-                        )
-
                         Card(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             elevation = CardDefaults.cardElevation(
@@ -195,7 +201,10 @@ fun FindRideScreen(
                                         .padding(top = 16.dp)
                                 )
 
-                                Row(
+                                TextField(
+                                    value = pickupText,
+                                    onValueChange = {},
+                                    readOnly = true,
                                     modifier = Modifier
                                         .padding(horizontal = 16.dp)
                                         .padding(top = 8.dp, bottom = 4.dp)
@@ -205,31 +214,48 @@ fun FindRideScreen(
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
                                         )
-                                        .background(primaryBackground)
                                         .fillMaxWidth()
                                         .height(50.dp)
                                         .clickable { openMaps(SearchType.PICKUP) },
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = vectorResource(Res.drawable.ic_location),
-                                        contentDescription = null,
-                                        tint = darkBlue,
-                                        modifier = Modifier.padding(start = 12.dp).size(16.dp)
-                                    )
+                                    placeholder = {
+                                        if(pickupText.isBlank()) {
+                                            Text("Select Pickup Location", fontSize = 12.sp)
+                                        }
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_location),
+                                            contentDescription = null,
+                                            tint = darkBlue,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_right_arrow),
+                                            contentDescription = "Change",
+                                            tint = greyLight,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = primaryBackground,
+                                        unfocusedContainerColor = primaryBackground,
+                                        disabledContainerColor = primaryBackground,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent,
+                                        disabledTextColor = darkBlue
+                                    ),
+                                    textStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.W300, color = darkBlue),
+                                    singleLine = true,
+                                    enabled = false
+                                )
 
-                                    Text(
-                                        text = pickupAddress?.displayName ?: "Select Pickup Location",
-                                        color = darkBlue,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W300,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(horizontal = 12.dp).weight(1f)
-                                    )
-                                }
-
-                                Row(
+                                TextField(
+                                    value = dropoffText,
+                                    onValueChange = {},
+                                    readOnly = true,
                                     modifier = Modifier
                                         .padding(horizontal = 16.dp)
                                         .padding(top = 4.dp, bottom = 8.dp)
@@ -239,29 +265,43 @@ fun FindRideScreen(
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
                                         )
-                                        .background(primaryBackground)
                                         .fillMaxWidth()
                                         .height(50.dp)
                                         .clickable { openMaps(SearchType.DROPOFF) },
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = vectorResource(Res.drawable.ic_flag),
-                                        contentDescription = null,
-                                        tint = emeraldGreen,
-                                        modifier = Modifier.padding(start = 12.dp).size(16.dp)
-                                    )
-
-                                    Text(
-                                        text = dropoffAddress?.displayName ?: "Select Destination",
-                                        color = darkBlue,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W300,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(horizontal = 12.dp).weight(1f)
-                                    )
-                                }
+                                    placeholder = {
+                                        if(dropoffText.isBlank()){
+                                            Text("Select Destination", fontSize = 12.sp)
+                                        }
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_flag),
+                                            contentDescription = null,
+                                            tint = emeraldGreen,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_right_arrow),
+                                            contentDescription = "Change",
+                                            tint = greyLight,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = primaryBackground,
+                                        unfocusedContainerColor = primaryBackground,
+                                        disabledContainerColor = primaryBackground,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent,
+                                        disabledTextColor = darkBlue
+                                    ),
+                                    textStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.W300, color = darkBlue),
+                                    singleLine = true,
+                                    enabled = false
+                                )
 
                                 Row {
                                     Column(modifier = Modifier.fillMaxWidth(0.5f)) {
@@ -494,8 +534,8 @@ fun FindRideScreen(
                                             scope.launch {
                                                 publishingRide = true
                                                 val result = rideViewModel.publishRide(
-                                                    origin = pickupAddress?.displayName ?: "",
-                                                    destination = dropoffAddress?.displayName ?: "",
+                                                    origin = pickupText,
+                                                    destination = dropoffText,
                                                     seats = selectedSeatOption,
                                                     price = 150.0,
                                                     startDateTime = departureDateTime.toInstant(

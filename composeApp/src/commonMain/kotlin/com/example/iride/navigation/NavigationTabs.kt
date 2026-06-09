@@ -11,8 +11,7 @@ import com.example.iride.generated.resources.ic_home
 import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_offer_ride
 import com.example.iride.generated.resources.ic_profile
-import com.example.iride.ui.FindRideScreen
-import com.example.iride.ui.MapScreen
+import com.example.iride.ui.PublishRideScreen
 import com.example.iride.viewmodel.RideViewModel
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
@@ -58,7 +57,7 @@ object OfferRideTab : Tab {
         val rideViewModel : RideViewModel = koinInject()
         val navigator = LocalNavigator.currentOrThrow
 
-        FindRideScreen(
+        PublishRideScreen(
             rideViewModel = rideViewModel
         ){ searchType ->
             navigator.push(Maps(searchType))

@@ -11,6 +11,7 @@ import com.example.iride.location.getCurrentLocation
 import com.example.iride.permission.Permission
 import com.example.iride.permission.PermissionHandler
 import com.example.iride.permission.PermissionState
+import com.example.iride.repository.api.LocationRepository
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,11 +23,9 @@ import kotlin.random.Random
 
 class RideViewModel(
     val rideRepository: RideRepository,
-    val permissionManager: PermissionHandler
-    val rideRepository: RideRepository,
+    val permissionManager: PermissionHandler,
     val locationRepository: LocationRepository,
     val connectivityMonitor: ConnectivityMonitor,
-    val permissionManager: PermissionHandler,
     val rideDao: RideDao
 ) : ViewModel() {
 

@@ -7,8 +7,6 @@ import com.example.iride.data.SignInAuthManager
 import com.example.iride.data.local.AppDatabase
 import com.example.iride.data.local.getDatabaseBuilder
 import com.example.iride.data.local.getRoomDatabase
-import com.example.iride.location.LocationService
-import com.example.iride.viewmodel.RideViewModel
 import org.koin.dsl.module
 
 val iosModule = module {

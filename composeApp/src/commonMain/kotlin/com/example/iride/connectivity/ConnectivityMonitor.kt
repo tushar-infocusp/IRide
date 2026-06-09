@@ -1,6 +1,5 @@
 package com.example.iride.connectivity
 
-import com.example.iride.location.LocationService
 import kotlinx.coroutines.flow.StateFlow
 
 /** Simple cross-platform status */
