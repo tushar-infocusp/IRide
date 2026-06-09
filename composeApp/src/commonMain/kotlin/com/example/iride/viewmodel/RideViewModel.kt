@@ -7,10 +7,11 @@ import com.example.iride.data.local.RideEntity
 import com.example.iride.connectivity.ConnectivityMonitor
 import com.example.iride.connectivity.ConnectivityStatus
 import com.example.iride.location.LocationData
-import com.example.iride.location.LocationRepository
+import com.example.iride.location.getCurrentLocation
 import com.example.iride.permission.Permission
 import com.example.iride.permission.PermissionHandler
 import com.example.iride.permission.PermissionState
+import com.example.iride.repository.api.LocationRepository
 import com.example.iride.repository.api.RideRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,9 +23,9 @@ import kotlin.random.Random
 
 class RideViewModel(
     val rideRepository: RideRepository,
+    val permissionManager: PermissionHandler,
     val locationRepository: LocationRepository,
     val connectivityMonitor: ConnectivityMonitor,
-    val permissionManager: PermissionHandler,
     val rideDao: RideDao
 ) : ViewModel() {
 
@@ -58,9 +59,9 @@ class RideViewModel(
         price: Double,
         startDateTime: Long,
         endDateTime: Long
-    ) {
+    ) : Boolean {
 
-        try {
+        return try {
             val result = rideRepository.publishRide(
                 origin = origin,
                 destination = destination,
@@ -87,9 +88,11 @@ class RideViewModel(
             } else {
                 throw Exception(result.exceptionOrNull()?.message)
             }
+            true
 
         } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 
@@ -98,7 +101,7 @@ class RideViewModel(
         viewModelScope.launch {
             val permissionState = permissionManager.checkPermission(arrayOf(Permission.LOCATION))
             if (permissionState is PermissionState.PermissionGranted && permissionManager.enableGps()) {
-                val location = locationRepository.getCurrentLocation()
+                val location = getCurrentLocation()
                 location?.let {
                     _lastLocation.value = it
                 }

@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     id("com.google.gms.google-services")
-    kotlin("plugin.serialization") version "1.9.20"
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
@@ -57,6 +57,10 @@ kotlin {
             version = "10.29.0"
         }
 
+        pod("MapLibre") {
+            version = "~> 6.17"
+        }
+
         framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -65,35 +69,50 @@ kotlin {
 
 
     sourceSets {
+
         androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
-//            implementation(libs.koin.compose)
+            implementation(libs.compose.uiToolingPreview)
+
             implementation(libs.firebase.auth.ktx)
-            implementation("io.ktor:ktor-client-okhttp:2.3.7")
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.google.play.services.location)
+
+            // ✅ ONLY engine here
+            implementation(libs.maplibre.android)
             implementation("io.insert-koin:koin-android:3.5.6")
             implementation("com.google.android.gms:play-services-location:21.2.0")
         }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.lifecycle)
+            implementation(libs.voyager.tab.navigator)
+
             implementation(libs.koin.core)
             implementation(libs.insert.koin.koin.compose)
+
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+
+            // ✅ ONLY here
+            implementation(libs.maplibre.compose)
+            implementation(libs.spatialk.geojson)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation("io.ktor:ktor-client-core:2.3.7")
-            implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
 
             implementation("network.chaintech:kmp-date-time-picker:1.1.1")
 
@@ -102,8 +121,9 @@ kotlin {
         }
 
         iosMain.dependencies {
-            implementation("io.ktor:ktor-client-darwin:2.3.7")
+            implementation(libs.ktor.client.darwin)
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }

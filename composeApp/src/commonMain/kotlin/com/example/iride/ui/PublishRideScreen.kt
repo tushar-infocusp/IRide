@@ -9,19 +9,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
-import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
-import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,12 +24,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,29 +47,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_9
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.iride.data.showToast
 import com.example.iride.generated.resources.Res
+import com.example.iride.generated.resources.app_name
 import com.example.iride.generated.resources.carbon_footprint
 import com.example.iride.generated.resources.estimated_carbon_saving
-import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_flag
+import com.example.iride.generated.resources.ic_leaf
 import com.example.iride.generated.resources.ic_location
+import com.example.iride.generated.resources.ic_notification
 import com.example.iride.generated.resources.ic_publish_ride_map
 import com.example.iride.generated.resources.ic_right_arrow
 import com.example.iride.generated.resources.ic_seat
 import com.example.iride.generated.resources.ic_time
+import com.example.iride.generated.resources.ic_user_profile
+import com.example.iride.generated.resources.offer_ride_departure_time_title
 import com.example.iride.generated.resources.offer_ride_sub_title
 import com.example.iride.generated.resources.offer_ride_title
 import com.example.iride.generated.resources.publish_ride
-import com.example.iride.generated.resources.offer_ride_departure_time_title
-
 import com.example.iride.generated.resources.route_details
 import com.example.iride.theme.darkBlue
 import com.example.iride.theme.deepGreen
@@ -84,11 +87,15 @@ import com.example.iride.theme.primaryBackground
 import com.example.iride.theme.primaryBlack
 import com.example.iride.theme.strokeLightGreen
 import com.example.iride.ui.common.TopHeader
+import com.example.iride.viewmodel.LocationViewModel
 import com.example.iride.viewmodel.RideViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import network.chaintech.kmp_date_time_picker.ui.datetimepicker.WheelDateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.DateTimePickerView
+import network.chaintech.kmp_date_time_picker.utils.WheelPickerDefaults
 import network.chaintech.kmp_date_time_picker.utils.now
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -97,10 +104,26 @@ import org.koin.compose.koinInject
 
 @Composable
 fun PublishRideScreen(
-    rideViewModel: RideViewModel
+    rideViewModel: RideViewModel,
+    locationViewModel: LocationViewModel = koinInject(),
+    openMaps : (SearchType) -> Unit
 ) {
 
     val scope = rememberCoroutineScope()
+    val pickupAddress by locationViewModel.pickupAddress.collectAsState()
+    val dropoffAddress by locationViewModel.dropoffAddress.collectAsState()
+    var pickupText by remember { mutableStateOf("") }
+    var dropoffText by remember { mutableStateOf("") }
+
+    LaunchedEffect(pickupAddress) {
+        pickupText = pickupAddress?.displayName ?: ""
+    }
+
+    LaunchedEffect(dropoffAddress?.displayName) {
+        dropoffText = dropoffAddress?.displayName ?: ""
+    }
+
+    var publishingRide by remember { mutableStateOf(false) }
     val allRides by rideViewModel.allRides.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -112,10 +135,6 @@ fun PublishRideScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().background(primaryBackground)) {
             TopHeader({}, {})
-            val lastLocation = rideViewModel.lastLocation.collectAsState()
-            if (lastLocation.value != null) {
-                Text("Last location Latitude: " + lastLocation.value?.latitude + " Longitude: ${lastLocation.value?.longitude}")
-            }
             var showDatePicker by remember { mutableStateOf(false) }
             var departureDateTime by remember { mutableStateOf(LocalDateTime.now()) }
             var selectedSeatOption by remember { mutableStateOf(1) }
@@ -167,14 +186,6 @@ fun PublishRideScreen(
                             fontWeight = FontWeight.W400,
                         )
 
-                        Text(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            text = "Total local rides: ${allRides.size}",
-                            color = deepGreen,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.W600
-                        )
-
                         Card(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             elevation = CardDefaults.cardElevation(
@@ -190,104 +201,107 @@ fun PublishRideScreen(
                                         .padding(top = 16.dp)
                                 )
 
-                                Row(
+                                TextField(
+                                    value = pickupText,
+                                    onValueChange = {},
+                                    readOnly = true,
                                     modifier = Modifier
                                         .padding(horizontal = 16.dp)
-                                        .padding(top = 8.dp, bottom = 8.dp)
-                                        .clip(
-                                            RoundedCornerShape(8.dp)
-                                        ).border(
+                                        .padding(top = 8.dp, bottom = 4.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(
                                             width = 1.dp,
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
-                                        ).background(primaryBackground)
+                                        )
                                         .fillMaxWidth()
                                         .height(50.dp)
-                                        .clickable(true, onClick = {
-                                            // open the location search page with autocomplete or map
-                                        }),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 8.dp)
-                                            .height(50.dp),
-                                        verticalArrangement = Arrangement.Top,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
+                                        .clickable { openMaps(SearchType.PICKUP) },
+                                    placeholder = {
+                                        if(pickupText.isBlank()) {
+                                            Text("Select Pickup Location", fontSize = 12.sp)
+                                        }
+                                    },
+                                    leadingIcon = {
                                         Icon(
                                             imageVector = vectorResource(Res.drawable.ic_location),
                                             contentDescription = null,
                                             tint = darkBlue,
-                                            modifier = Modifier
-                                                .width(10.dp)
-                                                .height(12.dp)
+                                            modifier = Modifier.size(16.dp)
                                         )
-                                        Spacer(
-                                            modifier = Modifier
-                                                .padding(top = 4.dp)
-                                                .width(1.dp)
-                                                .background(greyLight)
-                                                .height(16.dp)
+                                    },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_right_arrow),
+                                            contentDescription = "Change",
+                                            tint = greyLight,
+                                            modifier = Modifier.size(16.dp)
                                         )
+                                    },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = primaryBackground,
+                                        unfocusedContainerColor = primaryBackground,
+                                        disabledContainerColor = primaryBackground,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent,
+                                        disabledTextColor = darkBlue
+                                    ),
+                                    textStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.W300, color = darkBlue),
+                                    singleLine = true,
+                                    enabled = false
+                                )
 
-                                    }
-
-                                    Text(
-                                        "Downtown Tech District",
-                                        color = darkBlue,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W300,
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                    )
-                                }
-
-
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                        .padding(bottom = 8.dp)
-                                        .clip(
-                                            RoundedCornerShape(8.dp)
-                                        ).border(
+                                TextField(
+                                    value = dropoffText,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .padding(top = 4.dp, bottom = 8.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .border(
                                             width = 1.dp,
                                             color = greyLight,
                                             shape = RoundedCornerShape(8.dp)
-                                        ).background(primaryBackground).fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .clickable(true, onClick = {
-                                        }),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 8.dp)
-                                            .fillMaxHeight(),
-                                        verticalArrangement = Arrangement.Top,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
+                                        )
+                                        .fillMaxWidth()
+                                        .height(50.dp)
+                                        .clickable { openMaps(SearchType.DROPOFF) },
+                                    placeholder = {
+                                        if(dropoffText.isBlank()){
+                                            Text("Select Destination", fontSize = 12.sp)
+                                        }
+                                    },
+                                    leadingIcon = {
                                         Icon(
                                             imageVector = vectorResource(Res.drawable.ic_flag),
                                             contentDescription = null,
                                             tint = emeraldGreen,
-                                            modifier = Modifier
-                                                .width(9.dp)
-                                                .height(10.dp)
+                                            modifier = Modifier.size(16.dp)
                                         )
-                                    }
-
-                                    Text(
-                                        text = "Downtown Tech District",
-                                        color = darkBlue,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.W300,
-                                        modifier = Modifier
-                                            .padding(start = 8.dp)
-                                            .padding(vertical = 16.dp)
-                                    )
-                                }
+                                    },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = vectorResource(Res.drawable.ic_right_arrow),
+                                            contentDescription = "Change",
+                                            tint = greyLight,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = primaryBackground,
+                                        unfocusedContainerColor = primaryBackground,
+                                        disabledContainerColor = primaryBackground,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent,
+                                        disabledTextColor = darkBlue
+                                    ),
+                                    textStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.W300, color = darkBlue),
+                                    singleLine = true,
+                                    enabled = false
+                                )
 
                                 Row {
                                     Column(modifier = Modifier.fillMaxWidth(0.5f)) {
@@ -515,11 +529,13 @@ fun PublishRideScreen(
                                         .clip(RoundedCornerShape(12.dp))
                                         .fillMaxWidth()
                                         .background(deepGreen)
-                                        .clickable {
+                                        .height(56.dp)
+                                        .clickable(!publishingRide) {
                                             scope.launch {
-                                                rideViewModel.publishRide(
-                                                    origin = "Meerut",
-                                                    destination = "Delhi",
+                                                publishingRide = true
+                                                val result = rideViewModel.publishRide(
+                                                    origin = pickupText,
+                                                    destination = dropoffText,
                                                     seats = selectedSeatOption,
                                                     price = 150.0,
                                                     startDateTime = departureDateTime.toInstant(
@@ -529,18 +545,33 @@ fun PublishRideScreen(
                                                         TimeZone.currentSystemDefault()
                                                     ).epochSeconds
                                                 )
+                                                if(result){
+                                                    showToast("Ride Published successfully")
+                                                }
+                                                else{
+                                                    showToast("Failed to publish ride")
+                                                }
+                                                publishingRide = false
                                             }
                                         },
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center
                                 ) {
-                                    Text(
-                                        text = stringResource(Res.string.publish_ride),
-                                        color = Color.White,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.W600,
-                                        modifier = Modifier.padding(vertical = 16.dp),
-                                    )
+                                    if(!publishingRide){
+                                        Text(
+                                            text = stringResource(Res.string.publish_ride),
+                                            color = Color.White,
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.W600,
+                                        )
+                                    }
+                                    else{
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -625,6 +656,54 @@ fun PublishRideScreen(
     }
 }
 
+@Composable
+fun TopHeader(onProfileClick: () -> Unit, onNotificationClick: () -> Unit) {
+    Card(
+        shape = RectangleShape,
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier.background(Color.White).fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End
+        ) {
+            Row(
+                modifier = Modifier.background(Color.White).weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_user_profile),
+                    contentDescription = null,
+                    tint = null,
+                    modifier = Modifier.clip(CircleShape).clickable(true, onClick = {
+                        onProfileClick()
+                    })
+
+                )
+
+                Text(
+                    modifier = Modifier.padding(all = 16.dp),
+                    text = stringResource(Res.string.app_name), color = emeraldGreen,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.W700,
+                )
+            }
+            Icon(
+                painter = painterResource(Res.drawable.ic_notification),
+                contentDescription = null,
+                tint = null,
+                modifier = Modifier.clickable(true, onClick = {
+                    onNotificationClick()
+                })
+            )
+
+        }
+    }
+}
+
 
 @Composable
 fun WheelDatePickerBottomSheet(title: String, dateOfBirth: (LocalDateTime?) -> Unit) {
@@ -678,5 +757,7 @@ fun PublishRidePreview() {
     val rideViewModel: RideViewModel = koinInject()
     PublishRideScreen(
         rideViewModel = rideViewModel
-    )
+    ){
+
+    }
 }
