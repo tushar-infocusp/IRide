@@ -11,6 +11,7 @@ interface OTPAuthManager {
 }
 
 interface SignInAuthManager {
+    val isLoggedIn: Boolean
     suspend fun signUp(email: String, password: String): Result<Boolean>
     suspend fun login(email: String, password: String): Result<Boolean>
 }
@@ -21,6 +22,7 @@ sealed class OTPResult {
 }
 
 expect class FirebaseEmailAuthManager() : SignInAuthManager {
+    override val isLoggedIn: Boolean
     override suspend fun signUp(
         email: String,
         password: String
@@ -30,6 +32,4 @@ expect class FirebaseEmailAuthManager() : SignInAuthManager {
         email: String,
         password: String
     ): Result<Boolean>
-
-
 }

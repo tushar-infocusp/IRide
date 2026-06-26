@@ -3,6 +3,8 @@ package com.example.iride.di
 import com.example.iride.client.ApiClient
 import com.example.iride.connectivity.ConnectivityMonitor
 import com.example.iride.connectivity.provideConnectivityFactory
+import com.example.iride.data.FirebaseEmailAuthManager
+import com.example.iride.data.SignInAuthManager
 import com.example.iride.permission.PermissionHandler
 import com.example.iride.permission.providePermissionHandler
 import com.example.iride.repository.api.LocationRepository
@@ -50,6 +52,9 @@ val appModule = module {
     single<LocationRepository> {
         // TODO @harsh.agrawal make this a koin injection
         LocationRepositoryImpl(get())
+    }
+    single<SignInAuthManager> {
+        FirebaseEmailAuthManager()
     }
     // ⚠️ CRITICAL FIX: ViewModels/ScreenModels MUST be a factory.
     // If you use 'single', the state will never reset when you leave and return to the screen.

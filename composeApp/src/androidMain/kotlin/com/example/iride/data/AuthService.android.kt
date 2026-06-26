@@ -79,6 +79,9 @@ actual class FirebaseOTPAuthManager : OTPAuthManager {
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class FirebaseEmailAuthManager actual constructor() :
     SignInAuthManager {
+    actual override val isLoggedIn: Boolean
+        get() = FirebaseAuth.getInstance().currentUser != null
+
     actual override suspend fun signUp(
         email: String,
         password: String
