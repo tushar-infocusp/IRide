@@ -2,7 +2,7 @@ package com.example.iride.data
 
 import kotlinx.serialization.Serializable
 
-const val BASE_URL = "http://10.20.40.198:8080/api"
+const val BASE_URL = "https://iride-backend-687675182668.us-central1.run.app/api"
 
 @Serializable
 data class CreateRideRequest(

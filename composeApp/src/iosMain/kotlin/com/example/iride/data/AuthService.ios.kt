@@ -62,6 +62,10 @@ actual class FirebaseOTPAuthManager : OTPAuthManager {
 actual class FirebaseEmailAuthManager : SignInAuthManager {
 
     @OptIn(ExperimentalForeignApi::class)
+    actual override val isLoggedIn: Boolean
+        get() = FIRAuth.auth().currentUser() != null
+
+    @OptIn(ExperimentalForeignApi::class)
     actual override suspend fun signUp(
         email: String,
         password: String
